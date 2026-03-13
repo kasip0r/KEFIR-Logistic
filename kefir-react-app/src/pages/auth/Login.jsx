@@ -1,0 +1,506 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
+
+const Login = ({ onLogin, loading }) => {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+  const [isDemoLogin, setIsDemoLogin] = useState(false);
+  const [demoCredentials, setDemoCredentials] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Новое состояние для показа пароля
+  const navigate = useNavigate();
+
+  // Функция для автоматической отправки формы
+  const handleAutoSubmit = useCallback(async () => {
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setError('Пожалуйста, заполните все поля');
+      return;
+    }
+    
+    try {
+      await onLogin(formData);
+    } catch (error) {
+      if (error.isBanned) {
+        setError('Ваш аккаунт заблокирован. Доступ запрещен.');
+      } else {
+        setError(error.message || 'Ошибка при входе');
+      }
+    }
+  }, [formData, onLogin]);
+
+  // Эффект для автоматической отправки формы после обновления данных
+  useEffect(() => {
+    if (isDemoLogin && formData.username && formData.password) {
+      handleAutoSubmit();
+      setIsDemoLogin(false);
+    }
+  }, [formData, isDemoLogin, handleAutoSubmit]);
+
+  // Эффект для обработки демо-входа с предустановленными данными
+  useEffect(() => {
+    if (demoCredentials) {
+      const { username, password } = demoCredentials;
+      setFormData({ username, password });
+      setError('');
+      setIsDemoLogin(true);
+      setDemoCredentials(null);
+    }
+  }, [demoCredentials]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Обновляем форму
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Очищаем ошибку только если пользователь начал вводить данные
+    // и это не связано с проверкой валидации
+    if (!isValidating) {
+      setError('');
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsValidating(true);
+    
+    // Сразу показываем ошибку валидации
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setError('Пожалуйста, заполните все поля');
+      // Не сбрасываем isValidating сразу, даем пользователю увидеть сообщение
+      setTimeout(() => setIsValidating(false), 100);
+      return;
+    }
+    
+    setError('');
+    
+    try {
+      await onLogin(formData);
+      setIsValidating(false);
+    } catch (error) {
+      setIsValidating(false);
+      if (error.isBanned) {
+        setError('Ваш аккаунт заблокирован. Доступ запрещен.');
+      } else {
+        setError(error.message || 'Ошибка при входе');
+      }
+    }
+  };
+
+  // Функция для демо-входа
+  const handleDemoLogin = (username, password) => {
+    setDemoCredentials({ username, password });
+    setIsValidating(false);
+  };
+
+  const handleRegisterClick = () => {
+    navigate('/register');
+  };
+
+  // Обработчик клика по полям формы
+  const handleFieldClick = () => {
+    setIsValidating(false);
+    if (error === 'Пожалуйста, заполните все поля') {
+      setError('');
+    }
+  };
+
+  // Функция для переключения видимости пароля
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  return (
+    <div className="login-container">
+      <div className="login-box">
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <h2>🥛 KEFIR Logistics</h2>
+          <p style={{ color: '#666', fontSize: '14px' }}>Система управления доставками</p>
+        </div>
+        
+        <h3 style={{ marginBottom: '20px', textAlign: 'center' }}>Вход в систему</h3>
+        
+        {error && (
+          <div className={`error-message ${error.includes('заблокирован') ? 'status-banned' : ''}`}>
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="username">Имя пользователя</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              onClick={handleFieldClick}
+              placeholder="Введите имя пользователя"
+              required
+              disabled={loading}
+            />
+          </div>
+          
+          <div className="form-group" style={{ position: 'relative' }}>
+            <label htmlFor="password">Пароль</label>
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              onClick={handleFieldClick}
+              placeholder="Введите пароль"
+              required
+              disabled={loading}
+              style={{ paddingRight: '40px' }}
+            />
+            {/* Кнопка для показа/скрытия пароля */}
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              disabled={loading}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '35px',
+                background: 'transparent',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                padding: '5px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: loading ? 0.6 : 1,
+                color: '#666'
+              }}
+              aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+            >
+              {showPassword ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          </div>
+          
+          <button 
+            type="submit" 
+            className="login-button"
+            disabled={loading}
+            style={{ marginBottom: '10px' }}
+          >
+            {loading ? (
+              <>
+                <span className="spinner"></span> Вход...
+              </>
+            ) : 'Войти'}
+          </button>
+          
+          <button
+            type="button"
+            onClick={handleRegisterClick}
+            className="register-button"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'transparent',
+              color: '#1976d2',
+              border: '1px solid #1976d2',
+              borderRadius: '4px',
+              fontSize: '16px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              marginTop: '10px',
+              opacity: loading ? 0.6 : 1
+            }}
+          >
+            Регистрация
+          </button>
+        </form>
+
+        {/* Демо-кнопки для тестирования */}
+        <div style={{ marginTop: '25px', textAlign: 'center' }}>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '10px' }}>Тестовые пользователи:</p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('client', 'client')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('client2', 'client2')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('skladodin', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент1
+            </button>
+             <button
+              type="button"
+              onClick={() => handleDemoLogin('skladdva', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент2
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('skladtri', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Клиент3
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('admin', 'admin')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e8f5e9',
+                border: '1px solid #388e3c',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Админ
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('delivery', 'delivery')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#fff3e0',
+                border: '1px solid #ef6c00',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Курьер
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('collector', 'collector')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#f3e5f5',
+                border: '1px solid #7b1fa2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Сборщик
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('sborshikodin', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#f3e5f5',
+                border: '1px solid #7b1fa2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              sborshikodin
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('sborshikdva', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#f3e5f5',
+                border: '1px solid #7b1fa2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              sborshikdva
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('sborshiktri', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#f3e5f5',
+                border: '1px solid #7b1fa2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              sborshiktri
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('banned', 'banned')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#ffebee',
+                border: '1px solid #d32f2f',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Заблокированный
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('office', 'office')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e8f5e9',
+                border: '1px solid #045e0b',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Офис
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('starаyoshibka', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              starаyoshibka
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin('Reshenie', '123123')}
+              disabled={loading}
+              className="demo-button"
+              style={{
+                padding: '8px 12px',
+                background: '#e3f2fd',
+                border: '1px solid #1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
+              }}
+            >
+              Reshenie
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '12px', color: '#999' }}>
+          <p>Нет тестового аккаунта? Нажмите на кнопку выше для автозаполнения</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;
