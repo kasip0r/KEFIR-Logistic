@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    
+    <!-- Favicon для всех устройств -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png">
+    
+    <!-- Для Apple устройств -->
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png">
+    
+    <!-- Для Android -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#4CAF50" />
+    <meta name="description" content="KEFIR Logistics System - система управления доставками" />
+    
+    <!-- Для SEO и соцсетей -->
+    <meta property="og:title" content="KEFIR Logistics">
+    <meta property="og:description" content="Система управления доставками">
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png">
+    <meta property="og:type" content="website">
+    
+    <!-- Bootstrap CSS -->
+    <link 
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+      rel="stylesheet" 
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+      crossorigin="anonymous"
+    >
+    
+    <!-- FontAwesome Icons -->
+    <link 
+      rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" 
+      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" 
+      crossorigin="anonymous" 
+      referrerpolicy="no-referrer" 
+    />
+    
+    <title>🥛 KEFIR Logistics</title>
+    
+    <style>
+      /* Предзагрузка шрифтов для лучшей производительности */
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+      
+      /* Базовые стили до загрузки React */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+      }
+      
+      body {
+        margin: 0;
+        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        
+      }
+      
+      /* Полупрозрачный слой для лучшей читаемости текста (опционально) */
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.4); /* затемнение */
+        pointer-events: none; /* чтобы не мешать кликам */
+        z-index: 0;
+      }
+      
+      /* Лоадер пока грузится React */
+      #root {
+        min-height: 100vh;
+        position: relative;
+        z-index: 1; /* чтобы контент был поверх затемнения */
+      }
+      
+      /* Для лоадера (если нужен) */
+      #root:empty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      #root:empty::after {
+        content: '🥛 Загрузка KEFIR Logistics...';
+        font-size: 18px;
+        color: white;
+        text-shadow: 0 0 10px rgba(0,0,0,0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif; color: white; text-shadow: 0 0 10px rgba(0,0,0,0.5);">
+        <h1>🥛 KEFIR Logistics</h1>
+        <p style="font-size: 18px; margin: 20px 0;">
+          Для работы приложения требуется JavaScript. Пожалуйста, включите JavaScript в настройках браузера.
+        </p>
+        <p style="color: rgba(255,255,255,0.8);">
+          Need to enable JavaScript to run this app.
+        </p>
+      </div>
+    </noscript>
+    
+    <div id="root"></div>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script 
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+      crossorigin="anonymous">
+    </script>
+    
+    <!-- Дополнительные скрипты можно добавить здесь -->
+  </body>
+</html>

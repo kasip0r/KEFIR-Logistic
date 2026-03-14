@@ -1,0 +1,102 @@
+/* src/pages/collector/CollectorApp.css */
+
+/* Основной контейнер */
+.collector-app {
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive, sans-serif;
+}
+
+/* Анимации */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Стили для курсора фломастера - ОРИГИНАЛЬНАЯ ФОРМА, ЦВЕТ ХОЛОДНЫЙ ХРОМ */
+.collector-app .cursor-felt-pen {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><linearGradient id="chromeGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23ffffff"/><stop offset="50%" stop-color="%23b8c6db"/><stop offset="100%" stop-color="%235f7285"/></linearGradient></defs><path d="M8 28l16-16-4-4L4 24z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/><path d="M24 4l4 4-16 16-4-4z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/></svg>') 4 28, pointer !important;
+}
+
+/* Дополнительно для кнопок, которые должны иметь курсор-указатель */
+.collector-app .cursor-felt-pen,
+.collector-app button.cursor-felt-pen,
+.collector-app input[type="button"].cursor-felt-pen,
+.collector-app input[type="submit"].cursor-felt-pen,
+.collector-app input[type="reset"].cursor-felt-pen,
+.collector-app [role="button"].cursor-felt-pen,
+.collector-app .btn.cursor-felt-pen,
+.collector-app a.cursor-felt-pen,
+.collector-app .clickable.cursor-felt-pen {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><linearGradient id="chromeGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23ffffff"/><stop offset="50%" stop-color="%23b8c6db"/><stop offset="100%" stop-color="%235f7285"/></linearGradient></defs><path d="M8 28l16-16-4-4L4 24z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/><path d="M24 4l4 4-16 16-4-4z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/></svg>') 4 28, pointer !important;
+}
+
+/* Эффект при наведении для дополнительной интерактивности */
+.collector-app .cursor-felt-pen:hover {
+  filter: brightness(1.1);
+  transition: filter 0.2s ease;
+}
+
+/* Для отключенных кнопок */
+.collector-app button.cursor-felt-pen:disabled,
+.collector-app .cursor-felt-pen:disabled,
+.collector-app a.cursor-felt-pen.disabled,
+.collector-app [role="button"].cursor-felt-pen:disabled,
+.collector-app input.cursor-felt-pen:disabled,
+.collector-app .btn.cursor-felt-pen:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Эффекты наведения для элементов */
+.order-card-hover:hover {
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+/* Стили для статусов */
+.status-badge {
+  font-family: 'Comic Sans MS', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+/* Адаптивность */
+@media (max-height: 768px) {
+  .collector-app {
+    font-size: 0.9rem;
+  }
+}
+
+/* Печатный эффект для текста */
+.print-effect {
+  text-shadow: 0 1px 0 rgba(0,0,0,0.1);
+  letter-spacing: 0.3px;
+}
+
+/* Для мобильных устройств отключаем кастомный курсор */
+@media (hover: none) and (pointer: coarse) {
+  .collector-app .cursor-felt-pen,
+  .collector-app button.cursor-felt-pen,
+  .collector-app [role="button"].cursor-felt-pen,
+  .collector-app a.cursor-felt-pen,
+  .collector-app .btn.cursor-felt-pen {
+    cursor: pointer !important;
+  }
+  
+  .collector-app button.cursor-felt-pen:disabled,
+  .collector-app .cursor-felt-pen:disabled,
+  .collector-app a.cursor-felt-pen.disabled,
+  .collector-app [role="button"].cursor-felt-pen:disabled {
+    cursor: default !important;
+  }
+}

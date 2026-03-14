@@ -1,0 +1,1631 @@
+Важно - когда пишеш фронтенд код ОБЯЗАТЕЛЬНОговори куда его пишешь
+сДЕСЬ ЧАСТЬ КОДА ЧТО БЫ ТЫ МЕНЯ ПОНЯЛ.
+Микросервис USETS апликейшин пропертис: # Datasource
+spring.datasource.url=jdbc:postgresql://localhost:5432/kefir_db
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+
+server.port=8081
+
+# JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# ??? ??????????
+spring.jpa.defer-datasource-initialization=true
+
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,\
+  org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+# ????????? ???????????
+logging.level.org.springframework=DEBUG
+logging.level.com.example=DEBUG
+logging.level.yand=DEBUG
+logging.level.org.hibernate=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# ?????????? ????????? ????????
+В этой дб есть таблица users в которой хранятся юсерс и из которой фронтенд офисс получает email users.
+package yand.User;
+
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    private String username;
+
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
+
+    @Column(name = "firstname", length = 50)
+    private String firstname;
+
+    @Column(name = "age")
+    private Integer age;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "mag")
+    private String magaz;
+
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "status")
+    private String status = "active";
+
+    @Column(name = "role")
+    private String role = "client";
+
+
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    /*public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }*/
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getMagaz() {
+        return magaz;
+    }
+
+    public void setMagaz(String magaz) {
+        this.magaz = magaz;
+    }
+
+    public User(int id, String name, String firstname, Integer age, String city, String magaz) {
+        this.id = id;
+        this.username = name;
+        this.firstname = firstname;
+        this.age = age;
+        this.city = city;
+        this.magaz = magaz;
+    }
+
+    public User(String email) {
+        this.email = email;
+    }
+
+    public User() {
+    }
+
+    public enum UserStatus {
+        active("active"),
+        inactive("inactive"),
+        banned("banned");
+        //blocked("blocked"),
+        //pending("pending");
+
+        private final String value;
+
+        UserStatus(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public enum UserRole {
+    admin("admin"),
+    client("client"),
+    office("office"),
+    courier("courier"),
+    collector("collector");
+
+    private final String value;
+
+    UserRole(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}
+}
+
+Теперь Офис. (NB!!!) Итак нужны эндпоинты, офис получает айди товара и идет в таблицу usersklad id  |           name            | price | count |    akticul    |                                        description                                        |      category   
+   |    supplier     |         created_at         |         updated_at за тем что бы узнать товар , и получает id заказа и идет в таблицу carts d | client_id |        created_date        |  status   -
+---+-----------+----------------------------+----------- 
+ 1 |         1 | 2025-12-23 06:39:55.47264  | completed 
+ 2 |         1 | 2025-12-23 06:52:49.55847  | completed 
+ 3 |         1 | 2025-12-23 07:06:02.117162 | completed 
+ 4 |         1 | 2025-12-23 07:13:27.27766  | completed что бы получить id льзователя и в таблице users username, password, firstname, age, city, mag, email, status, created_at, updated_at, role получить его имя и email.  
+Смотри.сборщик меняет статус в таблице carts на проблема. Офисная страница просматривает страницу carts раз в 15 секунд. Как только видит новый статус  problem сразу же d carts узнает id пользователя, после чего идет в таблицу users и вытаскивает имя и email.  Потом у нас эмитация отправки email. После чего офисс дожен принять решение которое запишется в таблицу carts.
+package office.office;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class OfficeApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(OfficeApplication.class, args);
+	}
+
+}
+package office.office;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+@RestController
+@RequestMapping("/api/office")
+public class OfficeController {
+
+    @Autowired
+    private OfficeService officeService;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    // ========== ИНФОРМАЦИОННЫЕ ЭНДПОИНТЫ ==========
+
+    @GetMapping("/product/{id}")
+    public ResponseEntity<?> getProduct(@PathVariable Integer id) {
+        try {
+            Map<String, Object> product = officeService.getProductInfo(id);
+            return ResponseEntity.ok(product);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/order/{id}")
+    public ResponseEntity<?> getOrder(@PathVariable Integer id) {
+        try {
+            Map<String, Object> order = officeService.getOrderInfo(id);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/order/{id}/client")
+    public ResponseEntity<?> getClientByOrder(@PathVariable Integer id) {
+        try {
+            Map<String, Object> client = officeService.getUserInfoByOrder(id);
+            return ResponseEntity.ok(client);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/info/{orderId}/{productId}")
+    public ResponseEntity<?> getFullInfo(
+            @PathVariable Integer orderId,
+            @PathVariable Integer productId) {
+        try {
+            Map<String, Object> info = officeService.getFullInfo(orderId, productId);
+            return ResponseEntity.ok(info);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ========== ЭНДПОИНТЫ ДЛЯ ПРОБЛЕМ ==========
+
+    @PostMapping("/problem")
+    public ResponseEntity<?> createProblem(@RequestBody Map<String, Object> request) {
+        try {
+            Integer orderId = (Integer) request.get("orderId");
+            Integer productId = (Integer) request.get("productId");
+            String collectorId = (String) request.get("collectorId");
+            String problemType = (String) request.get("problemType");
+            String details = (String) request.get("details");
+
+            OfficeProblem problem = officeService.createProblem(orderId, productId, collectorId,
+                    problemType, details);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "problem", problem,
+                    "message", "Проблема зарегистрирована"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/problems")
+    public ResponseEntity<?> getAllProblems() {
+        try {
+            List<OfficeProblem> problems = officeService.getActiveProblems();
+            return ResponseEntity.ok(problems);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/problem/{id}")
+    public ResponseEntity<?> getProblem(@PathVariable Long id) {
+        try {
+            OfficeProblem problem = officeService.getProblemById(id);
+            return ResponseEntity.ok(problem);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Проблема не найдена: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/problem/{id}/notify")
+    public ResponseEntity<?> notifyClient(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request) {
+        try {
+            String message = (String) request.get("message");
+
+            // ПРАВИЛЬНЫЙ ВЫЗОВ: problemId и message
+            OfficeProblem problem = officeService.notifyClient(id, message);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "problem", problem,
+                    "message", "Клиент уведомлен"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/problem/{id}/decision")
+    public ResponseEntity<?> updateDecision(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request) {
+        try {
+            String decision = (String) request.get("decision");
+            String comments = (String) request.get("comments");
+
+            OfficeProblem problem = officeService.updateClientDecision(id, decision, comments);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "problem", problem,
+                    "message", "Решение клиента сохранено"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/problem/{id}/resolve")
+    public ResponseEntity<?> resolveProblem(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> request) {
+        try {
+            String officeAction = (String) request.get("officeAction");
+            String solution = (String) request.get("solution");
+
+            OfficeProblem problem = officeService.resolveProblem(id, officeAction, solution);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "problem", problem,
+                    "message", "Проблема решена"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/problems/collector/{collectorId}")
+    public ResponseEntity<?> getProblemsByCollector(@PathVariable String collectorId) {
+        try {
+            List<OfficeProblem> problems = officeService.getProblemsByCollector(collectorId);
+            return ResponseEntity.ok(problems);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ========== ДАШБОРД ==========
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getDashboard() {
+        try {
+            Map<String, Object> stats = officeService.getDashboardStats();
+            List<OfficeProblem> recentProblems = officeService.getRecentProblems(10);
+
+            return ResponseEntity.ok(Map.of(
+                    "stats", stats,
+                    "recentProblems", recentProblems,
+                    "timestamp", LocalDateTime.now()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/dashboard/unprocessed")
+    public ResponseEntity<?> getUnprocessedProblems() {
+        try {
+            List<OfficeProblem> problems = officeService.getUnprocessedProblems();
+            return ResponseEntity.ok(problems);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ========== ПРОВЕРКА ЗДОРОВЬЯ ==========
+
+    @GetMapping("/health")
+    public ResponseEntity<?> healthCheck() {
+        try {
+            Map<String, Object> health = officeService.healthCheck();
+            return ResponseEntity.ok(health);
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                    "status", "DOWN",
+                    "error", e.getMessage(),
+                    "timestamp", LocalDateTime.now()
+            ));
+        }
+    }
+
+    // ========== ТЕСТОВЫЕ ДАННЫЕ ==========
+
+    @PostMapping("/test/problem")
+    public ResponseEntity<?> createTestProblem() {
+        try {
+            Random random = new Random();
+            Integer orderId = random.nextInt(100) + 1;
+            Integer productId = random.nextInt(50) + 1;
+            String collectorId = "COLLECTOR_TEST_" + (random.nextInt(10) + 1);
+
+            OfficeProblem problem = officeService.createProblem(
+                    orderId, productId, collectorId,
+                    "MISSING_PRODUCT", "Тестовая проблема"
+            );
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "problem", problem,
+                    "message", "Тестовая проблема создана"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/test/simulate")
+    public ResponseEntity<?> simulateProblem() {
+        try {
+            Random random = new Random();
+            String collectorId = "COLLECTOR_" + (random.nextInt(10) + 1);
+
+            Map<String, Object> result = officeService.simulateCollectorProblem(collectorId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+}package office.office;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "office_problems")
+public class OfficeProblem {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "order_id")
+    private Integer orderId;
+
+    @Column(name = "product_id")
+    private Integer productId;
+
+    @Column(name = "collector_id")
+    private String collectorId;
+
+    @Column(name = "client_id")
+    private Integer clientId;
+
+    @Column(name = "problem_type")  // поле есть
+    private String problemType;
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "details")
+    private String details;
+
+    @Column(name = "client_email_sent")
+    private Boolean clientEmailSent = false;
+
+    @Column(name = "client_decision")
+    private String clientDecision;
+
+    @Column(name = "office_action")
+    private String officeAction;
+
+    @Column(name = "priority")
+    private String priority;
+
+    @Column(name = "assigned_to")
+    private Integer assignedTo;
+
+    @Column(name = "notified_at")
+    private LocalDateTime notifiedAt;
+
+    @Column(name = "client_responded_at")
+    private LocalDateTime clientRespondedAt;
+
+    @Column(name = "resolved_at")
+    private LocalDateTime resolvedAt;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // Конструкторы
+    public OfficeProblem() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // Геттеры и сеттеры (ВСЕ ДОЛЖНЫ БЫТЬ!)
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Integer getOrderId() { return orderId; }
+    public void setOrderId(Integer orderId) { this.orderId = orderId; }
+
+    public Integer getProductId() { return productId; }
+    public void setProductId(Integer productId) { this.productId = productId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public Integer getClientId() { return clientId; }
+    public void setClientId(Integer clientId) { this.clientId = clientId; }
+
+    // ВАЖНО: Должен быть геттер и сеттер для problemType!
+    public String getProblemType() { return problemType; }
+    public void setProblemType(String problemType) { this.problemType = problemType; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
+
+    public Boolean getClientEmailSent() { return clientEmailSent; }
+    public void setClientEmailSent(Boolean clientEmailSent) { this.clientEmailSent = clientEmailSent; }
+
+    public String getClientDecision() { return clientDecision; }
+    public void setClientDecision(String clientDecision) { this.clientDecision = clientDecision; }
+
+    public String getOfficeAction() { return officeAction; }
+    public void setOfficeAction(String officeAction) { this.officeAction = officeAction; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public Integer getAssignedTo() { return assignedTo; }
+    public void setAssignedTo(Integer assignedTo) { this.assignedTo = assignedTo; }
+
+    public LocalDateTime getNotifiedAt() { return notifiedAt; }
+    public void setNotifiedAt(LocalDateTime notifiedAt) { this.notifiedAt = notifiedAt; }
+
+    public LocalDateTime getClientRespondedAt() { return clientRespondedAt; }
+    public void setClientRespondedAt(LocalDateTime clientRespondedAt) { this.clientRespondedAt = clientRespondedAt; }
+
+    public LocalDateTime getResolvedAt() { return resolvedAt; }
+    public void setResolvedAt(LocalDateTime resolvedAt) { this.resolvedAt = resolvedAt; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+}package office.office;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface OfficeProblemRepository extends JpaRepository<OfficeProblem, Long> {
+
+    // ==================== БАЗОВЫЕ МЕТОДЫ ====================
+
+    // Найти по ID проблемы
+    @Override
+    Optional<OfficeProblem> findById(Long id);
+
+    // Найти все проблемы по статусу
+    List<OfficeProblem> findByStatus(String status);
+
+    // Найти проблемы по ID заказа
+    List<OfficeProblem> findByOrderId(Integer orderId);
+
+    // Найти проблемы по ID клиента
+    List<OfficeProblem> findByClientId(Integer clientId);
+
+    // Найти проблемы по ID сборщика
+    List<OfficeProblem> findByCollectorId(String collectorId);
+
+    // Найти проблемы по ID товара
+    List<OfficeProblem> findByProductId(Integer productId);
+
+    // Найти проблемы по типу проблемы
+    List<OfficeProblem> findByProblemType(String problemType);
+
+    // Найти последние N проблем
+    List<OfficeProblem> findTop10ByOrderByCreatedAtDesc();
+
+    // ==================== ПРОСТЫЕ ЗАПРОСЫ ====================
+
+    // Найти активные проблемы (не решенные)
+    @Query("SELECT p FROM OfficeProblem p WHERE p.status NOT IN ('RESOLVED', 'CANCELLED', 'COMPLETED') " +
+            "ORDER BY p.createdAt DESC")
+    List<OfficeProblem> findActiveProblems();
+
+    // Найти проблемы, созданные сегодня
+    @Query("SELECT p FROM OfficeProblem p WHERE DATE(p.createdAt) = CURRENT_DATE")
+    List<OfficeProblem> findTodayProblems();
+
+    // Посчитать количество проблем по статусу
+    @Query("SELECT COUNT(p) FROM OfficeProblem p WHERE p.status = :status")
+    Long countByStatus(@Param("status") String status);
+
+    // Посчитать количество проблем за сегодня по статусу
+    @Query("SELECT COUNT(p) FROM OfficeProblem p WHERE p.status = :status AND DATE(p.createdAt) = CURRENT_DATE")
+    Long countTodayByStatus(@Param("status") String status);
+
+    // ==================== ДЛЯ ДАШБОРДА ====================
+
+    // Найти проблемы для дашборда (сортировка по приоритету)
+    @Query("SELECT p FROM OfficeProblem p WHERE p.status IN ('PENDING', 'CLIENT_NOTIFIED') " +
+            "ORDER BY " +
+            "CASE p.priority " +
+            "  WHEN 'HIGH' THEN 1 " +
+            "  WHEN 'MEDIUM' THEN 2 " +
+            "  WHEN 'LOW' THEN 3 " +
+            "  ELSE 4 " +
+            "END ASC, " +
+            "p.createdAt ASC")
+    List<OfficeProblem> findProblemsForDashboard();
+
+    // Найти необработанные проблемы (старые более 1 часа)
+    @Query("SELECT p FROM OfficeProblem p WHERE p.status = 'PENDING' AND p.createdAt < :threshold")
+    List<OfficeProblem> findUnprocessedProblems(@Param("threshold") LocalDateTime threshold);
+
+    // ==================== ПРОВЕРОЧНЫЕ ЗАПРОСЫ ====================
+
+    // Проверить существование активной проблемы для заказа и товара
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END " +
+            "FROM OfficeProblem p " +
+            "WHERE p.orderId = :orderId AND p.productId = :productId " +
+            "AND p.status NOT IN ('RESOLVED', 'CANCELLED')")
+    boolean existsActiveProblemForOrderAndProduct(@Param("orderId") Integer orderId,
+                                                  @Param("productId") Integer productId);
+}package office.office;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Service
+@Transactional
+public class OfficeService {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private OfficeProblemRepository officeProblemRepository;
+
+    // ==================== МЕТОДЫ ДЛЯ РАБОТЫ С ТАБЛИЦАМИ ====================
+
+    /**
+     * Получить товар из таблицы usersklad
+     */
+    public Map<String, Object> getProductInfo(Integer productId) {
+        try {
+            String sql = "SELECT * FROM usersklad WHERE id = ?";
+            return jdbcTemplate.queryForMap(sql, productId);
+        } catch (Exception e) {
+            throw new RuntimeException("Товар не найден: " + productId);
+        }
+    }
+
+    /**
+     * Получить заказ из таблицы carts
+     */
+    public Map<String, Object> getOrderInfo(Integer orderId) {
+        try {
+            String sql = "SELECT * FROM carts WHERE id = ?";
+            return jdbcTemplate.queryForMap(sql, orderId);
+        } catch (Exception e) {
+            throw new RuntimeException("Заказ не найден: " + orderId);
+        }
+    }
+
+    /**
+     * Получить пользователя из таблицы users по ID заказа
+     */
+    public Map<String, Object> getUserInfoByOrder(Integer orderId) {
+        try {
+            // Получаем client_id из заказа
+            String clientIdSql = "SELECT client_id FROM carts WHERE id = ?";
+            Integer clientId = jdbcTemplate.queryForObject(clientIdSql, Integer.class, orderId);
+
+            if (clientId == null) {
+                throw new RuntimeException("Заказ не найден или не имеет client_id");
+            }
+
+            // Получаем пользователя (без пароля)
+            String userSql = "SELECT id, username, firstname, email, city, status, role FROM users WHERE id = ?";
+            return jdbcTemplate.queryForMap(userSql, clientId);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка получения пользователя: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Получить полную информацию (товар + заказ + пользователь)
+     */
+    public Map<String, Object> getFullInfo(Integer orderId, Integer productId) {
+        try {
+            Map<String, Object> result = new HashMap<>();
+            result.put("product", getProductInfo(productId));
+            result.put("order", getOrderInfo(orderId));
+            result.put("user", getUserInfoByOrder(orderId));
+            result.put("timestamp", LocalDateTime.now());
+            return result;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка получения полной информации: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Поиск товаров по названию или артикулу
+     */
+    public List<Map<String, Object>> searchProducts(String query) {
+        try {
+            String sql = "SELECT * FROM usersklad WHERE LOWER(name) LIKE LOWER(?) OR akticul LIKE ? LIMIT 20";
+            String searchPattern = "%" + query + "%";
+            return jdbcTemplate.queryForList(sql, searchPattern, searchPattern);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Получить историю заказов пользователя
+     */
+    public List<Map<String, Object>> getUserOrderHistory(Integer userId) {
+        try {
+            String sql = "SELECT * FROM carts WHERE client_id = ? ORDER BY created_date DESC LIMIT 10";
+            return jdbcTemplate.queryForList(sql, userId);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    // ==================== МЕТОДЫ ДЛЯ РАБОТЫ С ПРОБЛЕМАМИ ====================
+
+    /**
+     * Создать новую проблему (с details)
+     */
+    public OfficeProblem createProblem(Integer orderId, Integer productId, String collectorId,
+                                       String problemType, String details) {
+        try {
+            // Получаем client_id из заказа
+            String clientIdSql = "SELECT client_id FROM carts WHERE id = ?";
+            Integer clientId = jdbcTemplate.queryForObject(clientIdSql, Integer.class, orderId);
+
+            // Создаем новую проблему
+            OfficeProblem problem = new OfficeProblem();
+            problem.setOrderId(orderId);
+            problem.setProductId(productId);
+            problem.setCollectorId(collectorId);
+            problem.setClientId(clientId);
+
+            // Устанавливаем тип проблемы
+            String finalProblemType = problemType != null ? problemType : "MISSING_PRODUCT";
+            problem.setProblemType(finalProblemType);
+
+            problem.setStatus("PENDING");
+
+            // Устанавливаем детали
+            String finalDetails = details != null ? details : "Сборщик " + collectorId + " сообщил о проблеме: " + finalProblemType;
+            problem.setDetails(finalDetails);
+
+            problem.setPriority("HIGH");
+            problem.setClientEmailSent(false);
+
+            return officeProblemRepository.save(problem);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка создания проблемы: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Создать проблему (без details - для совместимости)
+     */
+    public OfficeProblem createProblem(Integer orderId, Integer productId, String collectorId,
+                                       String problemType) {
+        return createProblem(orderId, productId, collectorId, problemType, null);
+    }
+
+    /**
+     * Получить проблему по ID
+     */
+    public OfficeProblem getProblemById(Long problemId) {
+        return officeProblemRepository.findById(problemId)
+                .orElseThrow(() -> new RuntimeException("Проблема не найдена: " + problemId));
+    }
+
+    /**
+     * Получить все активные проблемы
+     */
+    public List<OfficeProblem> getActiveProblems() {
+        return officeProblemRepository.findActiveProblems();
+    }
+
+    /**
+     * Получить проблемы по статусу
+     */
+    public List<OfficeProblem> getProblemsByStatus(String status) {
+        return officeProblemRepository.findByStatus(status);
+    }
+
+    /**
+     * Получить проблемы по ID заказа
+     */
+    public List<OfficeProblem> getProblemsByOrder(Integer orderId) {
+        return officeProblemRepository.findByOrderId(orderId);
+    }
+
+    /**
+     * Получить проблемы по ID клиента
+     */
+    public List<OfficeProblem> getProblemsByClient(Integer clientId) {
+        return officeProblemRepository.findByClientId(clientId);
+    }
+
+    /**
+     * Получить проблемы по ID сборщика
+     */
+    public List<OfficeProblem> getProblemsByCollector(String collectorId) {
+        return officeProblemRepository.findByCollectorId(collectorId);
+    }
+
+    /**
+     * Отправить уведомление клиенту о проблеме
+     */
+    public OfficeProblem notifyClient(Long problemId, String customMessage) {
+        try {
+            OfficeProblem problem = getProblemById(problemId);
+
+            // Получаем информацию о клиенте
+            Map<String, Object> userInfo = getUserInfoByOrder(problem.getOrderId());
+            String clientEmail = (String) userInfo.get("email");
+            String clientName = (String) userInfo.get("firstname");
+
+            // Получаем информацию о товаре
+            Map<String, Object> productInfo = getProductInfo(problem.getProductId());
+            String productName = (String) productInfo.get("name");
+
+            // Формируем сообщение
+            String message = customMessage != null ? customMessage :
+                    String.format("Уважаемый(ая) %s!\n\n" +
+                                    "В вашем заказе #%d возникла проблема с товаром:\n" +
+                                    "Название: %s\n" +
+                                    "Тип проблемы: %s\n" +
+                                    "Детали: %s\n\n" +
+                                    "Пожалуйста, свяжитесь с нашим офисом для решения вопроса.\n\n" +
+                                    "С уважением,\nКоманда KEFIR Logistics",
+                            clientName, problem.getOrderId(), productName,
+                            problem.getProblemType(), problem.getDetails());
+
+            // Имитация отправки email
+            System.out.println("\n" + "=".repeat(50));
+            System.out.println("📧 ОТПРАВКА EMAIL КЛИЕНТУ");
+            System.out.println("Кому: " + clientEmail);
+            System.out.println("Тема: Проблема с заказом #" + problem.getOrderId());
+            System.out.println("Сообщение:\n" + message);
+            System.out.println("=".repeat(50) + "\n");
+
+            // Обновляем статус проблемы
+            problem.setClientEmailSent(true);
+            problem.setNotifiedAt(LocalDateTime.now());
+            problem.setStatus("CLIENT_NOTIFIED");
+
+            return officeProblemRepository.save(problem);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка отправки уведомления: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Обновить решение клиента
+     */
+    public OfficeProblem updateClientDecision(Long problemId, String decision, String comments) {
+        try {
+            OfficeProblem problem = getProblemById(problemId);
+
+            problem.setClientDecision(decision);
+            problem.setClientRespondedAt(LocalDateTime.now());
+            problem.setStatus("CLIENT_DECIDED");
+
+            if (comments != null && !comments.trim().isEmpty()) {
+                problem.setDetails(problem.getDetails() + "\nКомментарий клиента: " + comments);
+            }
+
+            return officeProblemRepository.save(problem);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка обновления решения клиента: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Решить проблему
+     */
+    public OfficeProblem resolveProblem(Long problemId, String officeAction, String solution) {
+        try {
+            OfficeProblem problem = getProblemById(problemId);
+
+            problem.setOfficeAction(officeAction);
+            problem.setStatus("RESOLVED");
+            problem.setResolvedAt(LocalDateTime.now());
+
+            if (solution != null && !solution.trim().isEmpty()) {
+                problem.setDetails(problem.getDetails() + "\nРешение: " + solution);
+            }
+
+            return officeProblemRepository.save(problem);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка решения проблемы: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Назначить проблему оператору
+     */
+    public OfficeProblem assignProblem(Long problemId, Integer operatorId) {
+        try {
+            OfficeProblem problem = getProblemById(problemId);
+            problem.setAssignedTo(operatorId);
+            return officeProblemRepository.save(problem);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка назначения проблемы: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Обновить статус проблемы
+     */
+    public OfficeProblem updateProblemStatus(Long problemId, String status) {
+        try {
+            OfficeProblem problem = getProblemById(problemId);
+            problem.setStatus(status);
+            return officeProblemRepository.save(problem);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка обновления статуса: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Удалить проблему (только если не решена)
+     */
+    public void deleteProblem(Long problemId) {
+        try {
+            OfficeProblem problem = getProblemById(problemId);
+
+            if ("RESOLVED".equals(problem.getStatus()) ||
+                    "COMPLETED".equals(problem.getStatus())) {
+                throw new RuntimeException("Нельзя удалить решенную или завершенную проблему");
+            }
+
+            officeProblemRepository.delete(problem);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка удаления проблемы: " + e.getMessage());
+        }
+    }
+**************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+    public List<OfficeProblem> getProblemsForDashboard(int limit) {
+        try {
+            List<OfficeProblem> problems = officeProblemRepository.findProblemsForDashboard();
+            return problems.size() > limit ? problems.subList(0, limit) : problems;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Получить необработанные проблемы (старые более 1 часа)
+     */
+    public List<OfficeProblem> getUnprocessedProblems() {
+        try {
+            LocalDateTime threshold = LocalDateTime.now().minusHours(1);
+            return officeProblemRepository.findUnprocessedProblems(threshold);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Получить статистику по проблемам
+     */
+    public Map<String, Long> getProblemStatistics() {
+        Map<String, Long> stats = new HashMap<>();
+
+        try {
+            // Простая статистика через базовые методы
+            stats.put("PENDING", officeProblemRepository.countByStatus("PENDING"));
+            stats.put("CLIENT_NOTIFIED", officeProblemRepository.countByStatus("CLIENT_NOTIFIED"));
+            stats.put("WAITING_CLIENT", officeProblemRepository.countByStatus("WAITING_CLIENT"));
+            stats.put("CLIENT_DECIDED", officeProblemRepository.countByStatus("CLIENT_DECIDED"));
+            stats.put("RESOLVED", officeProblemRepository.countByStatus("RESOLVED"));
+            stats.put("CANCELLED", officeProblemRepository.countByStatus("CANCELLED"));
+            stats.put("TOTAL", officeProblemRepository.count());
+
+        } catch (Exception e) {
+            // Заглушка
+            stats.put("PENDING", 5L);
+            stats.put("CLIENT_NOTIFIED", 3L);
+            stats.put("RESOLVED", 8L);
+            stats.put("TOTAL", 16L);
+        }
+
+        return stats;
+    }
+
+    /**
+     * Получить последние проблемы
+     */
+    public List<OfficeProblem> getRecentProblems(int count) {
+        try {
+            List<OfficeProblem> problems = officeProblemRepository.findTop10ByOrderByCreatedAtDesc();
+            return problems.size() > count ? problems.subList(0, count) : problems;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Проверить наличие активных проблем для заказа
+     */
+    public boolean hasActiveProblems(Integer orderId) {
+        try {
+            List<OfficeProblem> problems = officeProblemRepository.findByOrderId(orderId);
+            return problems.stream()
+                    .anyMatch(p -> !"RESOLVED".equals(p.getStatus()) &&
+                            !"CANCELLED".equals(p.getStatus()));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Проверить товар на других складах (имитация)
+     */
+    public List<Map<String, Object>> checkOtherWarehouses(Integer productId) {
+        List<Map<String, Object>> warehouses = new ArrayList<>();
+        Random random = new Random();
+
+        // Имитация проверки 5 складов
+        for (int i = 1; i <= 5; i++) {
+            // 40% chance что товар есть на складе
+            if (random.nextInt(100) < 40) {
+                Map<String, Object> warehouse = new HashMap<>();
+                warehouse.put("warehouseId", i);
+                warehouse.put("warehouseName", "Склад #" + i);
+                warehouse.put("quantity", random.nextInt(10) + 1);
+                warehouse.put("distance", (i * 3) + " км");
+                warehouse.put("estimatedTime", (i * 15) + " минут");
+                warehouses.add(warehouse);
+            }
+        }
+
+        return warehouses;
+    }
+
+    /**
+     * Симуляция: сборщик обнаружил проблему
+     */
+    public Map<String, Object> simulateCollectorProblem(String collectorId) {
+        try {
+            // Генерируем тестовые данные
+            Random random = new Random();
+            Integer orderId = random.nextInt(100) + 1;
+            Integer productId = random.nextInt(50) + 1;
+            String[] problemTypes = {"MISSING_PRODUCT", "DAMAGED_PRODUCT", "WRONG_PRODUCT", "QUALITY_ISSUE"};
+            String problemType = problemTypes[random.nextInt(problemTypes.length)];
+
+            // Создаем проблему
+            OfficeProblem problem = createProblem(orderId, productId, collectorId, problemType,
+                    "Тестовая симуляция проблемы от сборщика " + collectorId);
+
+            // Получаем информацию о товаре
+            Map<String, Object> productInfo = getProductInfo(productId);
+            String productName = (String) productInfo.get("name");
+
+            // Получаем информацию о клиенте
+            Map<String, Object> userInfo = getUserInfoByOrder(orderId);
+            String clientName = (String) userInfo.get("firstname");
+            String clientEmail = (String) userInfo.get("email");
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("simulation", true);
+            result.put("problem", problem);
+            result.put("collectorId", collectorId);
+            result.put("orderId", orderId);
+            result.put("productId", productId);
+            result.put("productName", productName);
+            result.put("clientName", clientName);
+            result.put("clientEmail", clientEmail);
+            result.put("message", "Проблема успешно смоделирована");
+            result.put("nextStep", "notify_client");
+            result.put("timestamp", LocalDateTime.now());
+
+            return result;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка симуляции: " + e.getMessage());
+        }
+    }
+
+
+    // ==================== МЕТОДЫ ДЛЯ ОБРАБОТКИ ВОЗВРАТОВ ====================
+
+    /**
+     * Обработать возврат от сборщика
+     */
+    public Map<String, Object> processReturnFromCollector(Map<String, Object> returnRequest) {
+        try {
+            String collectorId = (String) returnRequest.get("collectorId");
+            Integer orderId = (Integer) returnRequest.get("orderId");
+            Integer productId = (Integer) returnRequest.get("productId");
+            Integer quantity = (Integer) returnRequest.get("quantity");
+            String reason = (String) returnRequest.get("reason");
+
+            // Создаем запись о проблеме для возврата
+            OfficeProblem problem = createProblem(orderId, productId, collectorId,
+                    "OTHER", "Возврат от сборщика: " + reason);
+
+            // Обновляем статус
+            problem.setStatus("RESOLVED");
+            problem.setOfficeAction("PROCESS_REFUND");
+            problem.setResolvedAt(LocalDateTime.now());
+            officeProblemRepository.save(problem);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("problemId", problem.getId());
+            result.put("collectorId", collectorId);
+            result.put("orderId", orderId);
+            result.put("productId", productId);
+            result.put("quantity", quantity);
+            result.put("refundProcessed", true);
+            result.put("message", "Возврат обработан, средства возвращены клиенту");
+            result.put("timestamp", LocalDateTime.now());
+
+            // Имитация возврата средств
+            System.out.println("💰 Возврат средств для заказа #" + orderId +
+                    ", товар #" + productId + ", количество: " + quantity);
+
+            return result;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка обработки возврата: " + e.getMessage());
+        }
+    }
+
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ====================
+
+    /**
+     * Проверить подключение к таблицам
+     */
+    public Map<String, Boolean> checkTableConnections() {
+        Map<String, Boolean> connections = new HashMap<>();
+
+        String[] tables = {"users", "carts", "usersklad", "office_problems"};
+
+        for (String table : tables) {
+            try {
+                String sql = "SELECT 1 FROM " + table + " LIMIT 1";
+                jdbcTemplate.queryForObject(sql, Integer.class);
+                connections.put(table, true);
+            } catch (Exception e) {
+                connections.put(table, false);
+            }
+        }
+
+        return connections;
+    }
+
+    /**
+     * Получить количество проблем по типам
+     */
+    public Map<String, Long> getProblemTypesCount() {
+        Map<String, Long> typeCounts = new HashMap<>();
+
+        try {
+            // Получаем все проблемы
+            List<OfficeProblem> problems = officeProblemRepository.findAll();
+
+            // Группируем по типу
+            for (OfficeProblem problem : problems) {
+                String type = problem.getProblemType();
+                typeCounts.put(type, typeCounts.getOrDefault(type, 0L) + 1);
+            }
+
+        } catch (Exception e) {
+            // Заглушка
+            typeCounts.put("MISSING_PRODUCT", 5L);
+            typeCounts.put("DAMAGED_PRODUCT", 3L);
+            typeCounts.put("OTHER", 2L);
+        }
+
+        return typeCounts;
+    }
+}package office.office;
+
+public class ReturnRequest {
+    private String requestId;
+    private String collectorId;
+    private String clientId;
+    private String productId;
+    private String reason;
+    private Integer quantity;
+    private String officeId;
+
+    public ReturnRequest() {}
+
+    public ReturnRequest(String requestId, String collectorId, String clientId, String productId,
+                         String reason, Integer quantity, String officeId) {
+        this.requestId = requestId;
+        this.collectorId = collectorId;
+        this.clientId = clientId;
+        this.productId = productId;
+        this.reason = reason;
+        this.quantity = quantity;
+        this.officeId = officeId;
+    }
+
+    // Геттеры и сеттеры
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getOfficeId() { return officeId; }
+    public void setOfficeId(String officeId) { this.officeId = officeId; }
+}package office.office;
+
+import java.time.LocalDateTime;
+
+public class ReturnResponse {
+    private Long id;
+    private String requestId;
+    private String collectorId;
+    private String clientId;
+    private String productId;
+    private String reason;
+    private String status;
+    private LocalDateTime timestamp;
+    private String officeId;
+    private Integer quantity;
+    private String taskId; // Новое поле для связи с задачей коллектора
+
+    public ReturnResponse() {}
+
+    // Геттеры и сеттеры
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+    public String getCollectorId() { return collectorId; }
+    public void setCollectorId(String collectorId) { this.collectorId = collectorId; }
+    public String getClientId() { return clientId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+    public String getProductId() { return productId; }
+    public void setProductId(String productId) { this.productId = productId; }
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+    public String getOfficeId() { return officeId; }
+    public void setOfficeId(String officeId) { this.officeId = officeId; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public String getTaskId() { return taskId; }
+    public void setTaskId(String taskId) { this.taskId = taskId; }
+}spring.application.name=office
+server.port=8086
+
+# База данных
+spring.datasource.url=jdbc:postgresql://localhost:5432/kefir_db
+spring.datasource.username=postgres
+spring.datasource.password=Ghbdtnbr123!
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA - УПРОЩЕННАЯ КОНФИГУРАЦИЯ
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=false  # отключите для меньшего лога
+
+# Отключите валидацию запросов при старте
+spring.jpa.properties.hibernate.query.validation.mode=none
+
+# Безопасность
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+# Логирование
+logging.level.office.office=INFO
+logging.level.org.hibernate.SQL=ERROR  # только ошибки
+logging.level.org.springframework=WARN
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.kefir</groupId>
+    <artifactId>office-service</artifactId>
+    <version>1.0.0</version>
+    <name>office-service</name>
+    <description>Office Service for Kefir Logistics</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <spring-cloud.version>2022.0.4</spring-cloud.version>
+    </properties>
+
+    <dependencies>
+        <!-- ==================== SPRING BOOT ==================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- ==================== БАЗА ДАННЫХ ==================== -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ==================== ЛОГИРОВАНИЕ ==================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- ==================== ТЕСТИРОВАНИЕ ==================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- H2 для тестов -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ==================== МОНИТОРИНГ ==================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+Теперь Фронт
+
+
+Миссия приложения
+Для нейросети  добавление внешних проверок (fact-checking), temperature > 0, цепочки верификации (Chain-of-Verification), регулярная перекалибровка. 
+ЕЩЕ ВАЖНЕЕ _ЦЕЛОСТНОСТЬ НАШЕГО ПРИЛОЖЕНИЯ И НАШ НАД НИМ КОНТРОЛЬ, ЕСЛИ В КОДЕ ЧТО ТО ЕСТЬ И МЫ ТЕБЯ ОБ ЭТОМ НЕ СПРАШИВАЕМ ЗНАЧИТ ЭТО ПОЯВИЛОСЬ В КОДЕ ПО НАшей ВОЛЕ
+Когда описываешь метод - ВСЕГДА СВЕРХУ  ПИШИ ЕГО КЛАСС 
+Данную логистическую систему мы создаем из двух соображений. Создать хорошее логистическое приложение и решить проблему с ошибкой.
+Мы собираемся через него разыгрывать ситуацию когда сборщик собирает заказ, заказа нет и он вынужден обращатся в офисс, что бы офис связался с покупателем и уточнил продолжать ли собирать заказ. При этом у офиса должно быть возможность просматривать заказ. По сути клиент должен начинать транзакцию. Мы разыгрываем сдесь ошибку которая реальна произходит в другом приложении и предлогаем изящное решение: Транзакция открыта, сборщик посылает запрос в офис. И если офис принимает от клиента подтверждение на продолжение - транзакция закрывается и клиенту приходят только те товары, которые сборщик пробил до этого. При этом деньги возвращаются только за один товар о котором сборщик сообщил в офис, а все остальные товары которые он не успел пробить до возникновения ошибки - остаются на складе, хоть за них и заплатили деньги.  Клиент требует привезти ему весь товар. Поскольку транзакция закрылась раньше, нельзя гарантировать что оставшийся кроме отмененного товар, который ещё не прокликали, есть на складе. Соответсвенно офису нужно последовательно обзванивать несколько складов. И курьер или идёт по склада и собирает заказ или необходимо что бы курьеры оставляли 6а один склад все товары. Такой заказ везут час вместо обычных 15 минут. 
+Пункт 1.1. Разыграть в нашем приложении эту реально существующую ситуацию с возникновением ошибки. То есть намеренно вызвать ошибку транзакции. 
+Пункт1.2. Когда клиенту привозят нгеполный заказ, и не хватает оплаченных товаров - клиент связывается с офисом, офисс проверяет что эти товары не были пробиты. Далее если клиент настаивает на том что бы ему привезли екго недостоющии товары, а этих товаров нет на складе - офисс вынужден собирать товары по всем складам. То есть нам необходимо семулировать ситуацию, насколько не выгодно допускать эту ошибку. И потом уже давать решение.
+Пункт 2.  Решение следующуе. В рамках микросервиса TransactionSaga откатываем транзакцию если одного товара нет и открывать занова транзакцию на моменте начала сборки, сборщик после звонка должен опять прокликать все товары.Тут проблема как раз в том, что мы точно не знаем в чем ошибка. Если применялись разные подходы, а ошибка остается. Мне кажется лучше всего откатить старую транзакцию до начала сборки заказа. И создавать новую  сборку с начальными данными старой. Сборщик просто должен все перепикать. При неизвестных системных ошибках проще и безопаснее "перезагрузить процесс", чем пытаться его починить. Это как перезапустить зависший компьютер вместо поиска конкретного б
+То есть если цепочка. User зашел, Создал корзину отправил. Юсер вышел. Коллектор зашел отправил запрос в офис, вышел. ОФис зашел написал емаил клиенту(симуляция) запрос колектору вышел. Колектор зашел отдал заказ вышел. Клиент зашел отправил вышел. (Симуляция клиент пишит в офис. Офис зашел и общается со сборщиком. Дальше решение миссии в приложение - заходы выходы офиса и сборщика.ага в коде.
+
+Структура проекта: Kefir-React-App
+Подробное описание архитектуры React-приложения с микросервисным подходом
+
+
+
+IV. КЛЮЧЕВЫЕ ОСОБЕННОСТИ АРХИТЕКТУРЫ
+Принципы организации
+1.Модульность — каждый микросервис автономен
+2.Переиспользуемость — общие компоненты в корне src/
+3.Масштабируемость — легкое добавление новых микросервисов
+4.Независимость — отдельная сборка и деплой каждого микросервиса
+Взаимодействие между слоями
+text
+Клиентский браузер
+        ↓
+Nginx (прокси/статик)
+        ↓
+Фронтенд-микросервисы
+        ↓
+Общие компоненты (src/)
+        ↓
+Бэкенд-микросервисы (API)
+Типичный поток данных
+text
+1. Микросервис загружается → public/index.html
+2. Инициализируется React-приложение → src/index.js
+3. Загружается корневой компонент → App.js
+4. Подключаются необходимые сервисы → services/
+5. Используются общие компоненты → src/components/
+6. Выполняются API-запросы → services/api.js
+import React from 'react';
+
+const OfficeDeliveries = () => {
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">🚚 Доставки офиса</h1>
+      <p className="text-gray-600">Страница находится в разработке</p>
+    </div>
+  );
+};
+
+export default OfficeDeliveries;import React from 'react';
+
+const OfficeOrders = () => {
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">📋 Заказы офиса</h1>
+      <p className="text-gray-600">Страница находится в разработке</p>
+    </div>
+  );
+};
+
+export default OfficeOrders;import React from 'react';
+
+const OfficeReports = () => {
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">📊 Отчеты офиса</h1>
+      <p className="text-gray-600">Страница находится в разработке</p>
+    </div>
+  );
+};
+
+export default OfficeReports;
+import React from 'react';
+
+const OfficePage = () => {
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">🏢 Панель офиса</h1>
+      <p className="text-gray-600">Страница находится в разработке</p>
+    </div>
+  );
+};
+
+export default OfficePage;
+
+
+Вообще фишка дизайна - некоторые части жлеменотов форнта написаны стилем - рисует ребенок, не твердой детской рукой.
+1. Курсор в виде фломастера
+·Заменю стандартный курсор на кастомный: рисованный кончик фломастера (слегка скошенный, с имитацией следа).
+·При наведении на кликабельные элементы:
+oФломастер может слегка наклоняться.
+oПоявляется лёгкая тень/отметка под курсором (как будто фломастер касается бумаги).
+·Цвет фломастера можно менять в зависимости от раздела (жёлтый для клиента, чёрный для админа).
+2. Переход между страницами как листание блокнота
+·Анимация перехода будет имитировать перелистывание страницы:
+oТекущая страница «отрывается» справа и уходит влево.
+oНовая страница «приезжает» справа, как будто это следующий лист в блокноте.
+·Можно добавить лёгкий шелест бумаги (по желанию, звуковой эффект).
+·Фон страницы может иметь текстуру слегка состаренной бумаги/блокнота.
+
+Приложение офиса
+
+
+Офис получает заявку на отсутсвие заказа от сборщика. Пишет клиенту и или отменяет заказ и он отменяется у сборщика или отправляет сборщику сигнал, что бы он продолжал сборку.
+Все монохромное. То есть черно-белое. Пазиционирование вертикальное. То есть фул хд не должно быть прокрута вниз. ВСЯ СТРАНИЦА ДОЛЖНА ПОМЕЩАТСЯ НА ОДИН ЭКРАН!!!
+Экран поделен на две половины. Слева на 70 процентов экрна прямоугольник верхний правыфй угол которого закрашен черным, сообщение от сборщика. Справа чисто белый прямоугольник с черной кнопкой, кнопка которая отправляет клиенту запрос по форме(имитация письма на email, должен быть email и имя полученые из таблицы  users) - осутсвует товар, ваше решение.две кнопки красная и синяя одобрить, отменить. После нажатие кнопки рещение возвращает заказ в таблицу заказов для сборщиков или удаляет его.
+
+
