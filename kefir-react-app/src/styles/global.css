@@ -1,24 +1,31 @@
+<<<<<<< HEAD
 /* src/styles/global.css */
 
 /* Сброс стилей */
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+<<<<<<< HEAD
 /* Корневые элементы */
 html, body {
   min-height: 100vh;
   width: 100%;
 }
 
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+<<<<<<< HEAD
   
   /* 🎨 ВАШ ИСХОДНЫЙ ФОН */
   background-color: #f8f5f0;
@@ -106,15 +113,32 @@ a, button, input, select, textarea, [role="button"] {
   cursor: inherit;
 }
 
+=======
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+/* Glassmorphism эффекты */
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 .glass {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+<<<<<<< HEAD
   cursor: inherit;
 }
 
+=======
+}
+
+/* Утилиты */
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 .flex-center {
   display: flex;
   justify-content: center;
@@ -124,6 +148,7 @@ a, button, input, select, textarea, [role="button"] {
 .text-center {
   text-align: center;
 }
+<<<<<<< HEAD
 
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -134,3 +159,5 @@ a, button, input, select, textarea, [role="button"] {
     cursor: auto !important;
   }
 }
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada

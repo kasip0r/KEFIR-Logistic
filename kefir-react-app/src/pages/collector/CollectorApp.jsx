@@ -922,7 +922,11 @@ const CollectorApp = () => {
                     <p className="comic-font mt-3">Загрузка заказов...</p>
                   </div>
                 ) : orders.length === 0 ? (
+<<<<<<< HEAD
                   <div className="text-center py-5" style={styles.emptyState}>
+=======
+                  <div className="text-center py-5">
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
                     <div className="display-1 mb-3">📭</div>
                     <p className="comic-font">Нет заказов для сборки</p>
                     <small className="text-muted">Ожидание заказов со статусом 'processing'...</small>
@@ -936,7 +940,11 @@ const CollectorApp = () => {
                     </div>
                   </div>
                 ) : (
+<<<<<<< HEAD
                   <div className="flex-grow-1 overflow-auto orders-list" style={styles.ordersList}>
+=======
+                  <div className="flex-grow-1 overflow-auto orders-list">
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
                     {orders.map((order) => (
                       <div
                         key={order.cart_id}
@@ -981,7 +989,11 @@ const CollectorApp = () => {
                 )}
                 
                 {/* Статистика */}
+<<<<<<< HEAD
                 <div className="mt-3 pt-3" style={styles.statsBottom}>
+=======
+                <div className="mt-3 pt-3 border-top" style={styles.statsBottom}>
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
                   <div className="row text-center">
                     <div className="col-3">
                       <div style={styles.statItem}>
@@ -1083,7 +1095,11 @@ const CollectorApp = () => {
                   </div>
                 </>
               ) : (
+<<<<<<< HEAD
                 <div className="text-center py-5" style={styles.emptyState}>
+=======
+                <div className="text-center py-5">
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
                   <div className="display-1 mb-3">👈</div>
                   <p className="comic-font">Выберите заказ из списка</p>
                 </div>
@@ -1123,6 +1139,7 @@ const CollectorApp = () => {
   );
 };
 
+<<<<<<< HEAD
 // Стили - ИСПРАВЛЕННАЯ ВЕРСИЯ
 const styles = {
   leftPanel: {
@@ -1137,6 +1154,16 @@ const styles = {
     backgroundColor: 'transparent',
     // Добавляем внутренний отступ
     padding: '20px 15px 0 15px'
+=======
+// Стили
+const styles = {
+  leftPanel: {
+    backgroundColor: '#ffffff',
+    borderRight: '3px solid #000'
+  },
+  rightPanel: {
+    backgroundColor: '#ffffff'
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   },
   loadingSpinner: {
     width: '40px',
@@ -1147,6 +1174,7 @@ const styles = {
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },
+<<<<<<< HEAD
   // Новый стиль для списка заказов
   ordersList: {
     flexGrow: 1,
@@ -1154,14 +1182,20 @@ const styles = {
     padding: '5px',
     marginTop: '10px'
   },
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   orderCard: {
     padding: '15px',
     border: '2px solid #dee2e6',
     borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+<<<<<<< HEAD
     backgroundColor: '#ffffff',
     marginBottom: '10px'
+=======
+    backgroundColor: '#ffffff'
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   },
   orderCardSelected: {
     padding: '15px',
@@ -1169,8 +1203,12 @@ const styles = {
     borderRadius: '6px',
     cursor: 'pointer',
     backgroundColor: '#f8f9fa',
+<<<<<<< HEAD
     boxShadow: '3px 3px 0 #000',
     marginBottom: '10px'
+=======
+    boxShadow: '3px 3px 0 #000'
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   },
   orderNumber: {
     color: '#000',
@@ -1190,21 +1228,33 @@ const styles = {
     display: 'inline-block'
   },
   statsBottom: {
+<<<<<<< HEAD
     backgroundColor: '#ffffff',
     borderRadius: '6px',
     padding: '10px',
     marginTop: '15px',
     border: '1px solid #dee2e6'
+=======
+    backgroundColor: '#f8f9fa',
+    borderRadius: '6px'
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   },
   statItem: {
     padding: '5px'
   },
   selectedOrderInfo: {
+<<<<<<< HEAD
     backgroundColor: '#ffffff',
     padding: '15px',
     borderRadius: '6px',
     border: '2px solid #dee2e6',
     marginBottom: '20px'
+=======
+    backgroundColor: '#f8f9fa',
+    padding: '15px',
+    borderRadius: '6px',
+    border: '2px solid #dee2e6'
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   },
   checkButton: {
     padding: '12px',
@@ -1216,6 +1266,7 @@ const styles = {
     fontSize: '16px',
     transition: 'all 0.2s ease'
   },
+<<<<<<< HEAD
   emptyState: {
     backgroundColor: '#ffffff',
     padding: '30px',
@@ -1223,6 +1274,8 @@ const styles = {
     border: '2px solid #dee2e6',
     textAlign: 'center'
   },
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   
   // Стили для модального окна
   modalOverlay: {

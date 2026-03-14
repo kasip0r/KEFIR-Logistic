@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import PaymentModal from './PaymentModal';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import './ClientCart.css';
 
 const ClientCart = () => {
@@ -12,7 +13,7 @@ const ClientCart = () => {
   
   // Состояния для PaymentModal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
+  const [paymentOrderDetails, setPaymentOrderDetails] = useState(null);
 
   // Состояние для подтверждения удаления
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -56,6 +57,9 @@ const ClientCart = () => {
       console.log('Ответ от API:', response.data);
       
       if (response.data.success) {
+          response.data.carts.forEach((cart, index) => {
+         // console.log(`Cart ${index}: id=${cart.id}, clientId=${cart.clientId}`);  
+        });
         return response.data.carts || [];
       }
     } catch (err) {
@@ -64,75 +68,135 @@ const ClientCart = () => {
     return [];
   }, [getClientId]);
 
-  // Основная функция загрузки данных
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError('');
+// Основная функция загрузки данных
+const loadData = useCallback(async () => {
+  setLoading(true);
+  setError('');
+  
+  try {
+    const clientId = getClientId();
     
-    try {
-      const clientId = getClientId();
-      
-      if (!clientId) {
-        setError('Пользователь не авторизован');
-        setLoading(false);
-        return;
-      }
-
-      console.log('Загружаем данные для клиента:', clientId);
-
-      const cartsData = await fetchCarts();
-
-      console.log('Получено корзин до сортировки:', cartsData.length);
-
-      // СОРТИРУЕМ ПО УБЫВАНИЮ ID
-      const sortedCarts = [...cartsData].sort((a, b) => {
-        const idA = a.id || 0;
-        const idB = b.id || 0;
-        return idB - idA; // По убыванию
-      });
-
-      console.log('Получено корзин после сортировки:', sortedCarts.length);
-
-      setCarts(sortedCarts);
-
-    } catch (err) {
-      console.error('Ошибка при загрузке данных:', err);
-      setError(err.response?.data?.message || err.message || 'Ошибка сети');
-    } finally {
+    if (!clientId) {
+      setError('Пользователь не авторизован');
       setLoading(false);
+      return;
     }
-  }, [fetchCarts, getClientId]);
 
-  // Функция удаления заказа
-  const handleDeleteOrder = async () => {
-    if (!cartToDelete) return;
+    console.log('Загружаем данные для клиента:', clientId);
+
+    const cartsData = await fetchCarts();
+
+    console.log('Получено корзин до сортировки:', cartsData.length);
+
+    // ✅ ФИЛЬТРУЕМ ТОЛЬКО НЕОТМЕНЁННЫЕ ЗАКАЗЫ
+    const activeCarts = cartsData.filter(cart => 
+      cart.status !== 'cancelled' && cart.status !== 'CANCELLED'
+    );
+
+    console.log('После фильтрации отменённых:', activeCarts.length);
+
+    // СОРТИРУЕМ ПО УБЫВАНИЮ ID
+    const sortedCarts = [...activeCarts].sort((a, b) => {
+      const idA = a.id || 0;
+      const idB = b.id || 0;
+      return idB - idA;
+    });
+
+    setCarts(sortedCarts);
+
+  } catch (err) {
+    console.error('Ошибка при загрузке данных:', err);
+    setError(err.response?.data?.message || err.message || 'Ошибка сети');
+  } finally {
+    setLoading(false);
+  }
+}, [fetchCarts, getClientId]);
+
+// Функция отмены заказа (вместо удаления)
+const handleCancelOrder = async () => {
+  if (!cartToDelete) return;
+  
+  setDeletingCart(true);
+  
+  try {
+    console.log('🗑️ Отмена заказа ID:', cartToDelete.id);
     
-    setDeletingCart(true);
-    
-    try {
-      // Отправляем запрос на удаление заказа
-      const response = await axios.delete(
-        `http://localhost:8080/api/cart/${cartToDelete.id}`,
-        {
-          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        }
-      );
-      
-      if (response.data && response.data.success) {
-        // Удаляем заказ из локального состояния
-        setCarts(prev => prev.filter(cart => cart.id !== cartToDelete.id));
-        setShowDeleteConfirm(false);
-        setCartToDelete(null);
-        setShowModal(false);
-      } else {
-        alert('Ошибка при удалении заказа');
+    // 1. Находим заказ по cartId
+    const orderResponse = await axios.get(
+      `http://localhost:8080/api/orders/by-cart/${cartToDelete.id}`,
+      {
+        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
       }
-    } catch (err) {
-      console.error('Ошибка удаления заказа:', err);
-      alert(err.response?.data?.message || 'Ошибка при удалении заказа');
-    } finally {
-      setDeletingCart(false);
+    );
+    
+    if (!orderResponse.data || !orderResponse.data.success) {
+      throw new Error('Заказ не найден');
     }
+    
+    const orderId = orderResponse.data.orderId;
+    const orderNumber = orderResponse.data.orderNumber;
+    
+    console.log('📦 Найден заказ:', { orderId, orderNumber });
+    
+    // 2. Меняем статус заказа на "cancelled"
+    const statusResponse = await axios.put(
+      `http://localhost:8080/api/cart/orders/${orderId}/status`,
+      { status: 'cancelled' },
+      {
+        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+      }
+    );
+    
+    console.log('✅ Статус заказа изменён на cancelled:', statusResponse.data);
+    
+    // 3. Возвращаем товары на склад (если нужно)
+    if (cartToDelete.items && cartToDelete.items.length > 0) {
+      for (const item of cartToDelete.items) {
+        try {
+          await axios.post(
+            `http://localhost:8080/api/products/${item.productId}/release`,
+            null,
+            {
+              params: { quantity: item.quantity },
+              headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+            }
+          );
+          console.log(`✅ Товар ${item.productId} возвращён на склад`);
+        } catch (releaseErr) {
+          console.error(`❌ Ошибка возврата товара ${item.productId}:`, releaseErr);
+        }
+      }
+    }
+    
+    // 4. Обновляем список заказов
+    setShowDeleteConfirm(false);
+    setCartToDelete(null);
+    setShowModal(false);
+    alert('✅ Заказ отменён');
+    loadData(); // перезагружаем список
+    
+  } catch (err) {
+    console.error('❌ Ошибка отмены заказа:', err);
+    alert('❌ Ошибка при отмене заказа: ' + (err.response?.data?.message || err.message));
+  } finally {
+    setDeletingCart(false);
+  }
+};
+
+  // Функция подтверждения оплаты
+  const handlePaymentConfirm = (paymentResult) => {
+    console.log('✅ Оплата подтверждена:', paymentResult);
+    // Перезагружаем список заказов после оплаты
+    setTimeout(() => {
+      loadData();
+    }, 2000);
+  };
+
+  // Функция очистки корзины после оплаты
+  const handleClearCart = () => {
+    console.log('🧹 Очистка корзины после оплаты');
+    // Перезагружаем список заказов
+    loadData();
   };
 
   // Открыть подтверждение удаления
@@ -158,60 +222,90 @@ const ClientCart = () => {
     setSelectedCart(null);
   };
 
-  // Функция открытия оплаты
-  const handleOpenPayment = async (cart) => {
-    console.log('📦 Открытие оплаты для корзины:', cart);
+// Функция открытия оплаты - ИСПРАВЛЕННАЯ
+const handleOpenPayment = async (cart) => {
+  
+  const cartId = cart.id;
+  let orderNumber = null;
+  let realOrderId = null;
+  
+  try {
+    // Пытаемся получить существующий заказ
+    const orderResponse = await axios.get(
+      `http://localhost:8080/api/orders/by-cart/${cartId}`,
+      {
+        headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+      }
+    );
     
-    const cartId = cart.id;
-    let orderNumber = null;
-    
+    if (orderResponse.data && orderResponse.data.success) {
+      orderNumber = orderResponse.data.orderNumber;
+      realOrderId = orderResponse.data.id || orderResponse.data.orderId;
+      console.log('✅ Найден существующий заказ:', { realOrderId, orderNumber });
+    }
+  } catch (err) {
+    console.log('⚠️ Заказ не найден, будет создан новый');
+  }
+  
+  // Если заказа нет - создаём его
+  if (!realOrderId) {
     try {
-      const orderResponse = await axios.get(
-        `http://localhost:8080/api/orders/by-cart/${cartId}`,
-        {
-          headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-        }
+      const createOrderData = {
+        userId: cart.clientId,
+        cartId: cartId,
+        items: cart.items?.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+          price: item.price
+        })) || [],
+        totalAmount: cart.totalAmount,
+        status: 'pending'
+      };
+      
+      const createResponse = await axios.post(
+        `http://localhost:8080/api/orders`,
+        createOrderData,
+        { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }
       );
       
-      if (orderResponse.data && orderResponse.data.success) {
-        orderNumber = orderResponse.data.orderNumber;
-        console.log('✅ Найден настоящий номер заказа:', orderNumber);
+      if (createResponse.data && createResponse.data.success) {
+        realOrderId = createResponse.data.id || createResponse.data.orderId;
+        orderNumber = createResponse.data.orderNumber || `ORD-${realOrderId}`;
+        console.log('✅ Создан новый заказ:', { realOrderId, orderNumber });
       }
-    } catch (err) {
-      console.log('⚠️ Не удалось получить номер заказа, используем ORD-' + cartId);
-    }
-    
-    if (!orderNumber) {
+    } catch (createErr) {
+      console.error('❌ Ошибка создания заказа:', createErr);
+      // Если не удалось создать заказ, используем cartId как запасной вариант
+      realOrderId = cartId;
       orderNumber = `ORD-${cartId}`;
     }
-    
-    const orderDetails = {
-      userId: cart.clientId,
-      orderId: orderNumber,
-      cartId: cartId,
-      totalAmount: cart.totalAmount,
-      items: cart.items?.map(item => ({
-        productId: item.productId,
-        productName: item.productName,
-        quantity: item.quantity,
-        price: item.price
-      })) || []
-    };
-    
-    console.log('💰 Открытие оплаты для заказа:', orderDetails);
-    
-    setCurrentOrderDetails(orderDetails);
-    setShowPaymentModal(true);
-    setShowModal(false);
+  }
+  
+  if (!orderNumber) {
+    orderNumber = `ORD-${realOrderId}`;
+  }
+  
+  // СОЗДАЁМ orderDetails с ВСЕМИ нужными полями
+  const orderDetails = {
+    userId: cart.clientId,
+    orderId: realOrderId,
+    orderNumber: orderNumber,
+    cartId: cartId,
+    totalAmount: cart.totalAmount,
+    items: cart.items?.map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      quantity: item.quantity,
+      price: item.price
+    })) || []
   };
-
-  // Обработка успешной оплаты
-  const handlePaymentSuccess = useCallback((paymentData) => {
-    console.log('✅ Оплата успешна:', paymentData);
-    setTimeout(() => {
-      loadData(); // Обновляем заказы через 2 секунды
-    }, 2000);
-  }, [loadData]);
+  
+  // 👇 ПРАВИЛЬНЫЙ ПОРЯДОК: сначала данные, потом открытие модалки
+  setPaymentOrderDetails(orderDetails);
+  setShowPaymentModal(true);
+  setShowModal(false);
+};
 
   useEffect(() => {
     loadData();
@@ -327,6 +421,13 @@ const ClientCart = () => {
             bgColor: '#e3f2fd',
             textColor: '#1565c0'
           };
+
+        case 'expired':
+          return {
+            text: '❌ Отменен',
+            bgColor: '#e3f2fd',
+            textColor: '#1565c0'
+          };
         
         case 'processing':
         case 'in_progress':
@@ -349,11 +450,18 @@ const ClientCart = () => {
             bgColor: '#f5f5f5',
             textColor: '#616161'
           };
+
+        case 'paid':
+          return {
+            text: '₽ Оплачен',
+            bgColor: '#d0f1bc',
+            textColor: '#629e50'
+          };
         
         case 'pending':
           return {
             text: '⏳ Ожидание оплаты',
-            bgColor: '#fff3e0',
+            bgColor: '#e7e6de',
             textColor: '#ed6c02'
           };
         
@@ -730,7 +838,7 @@ const ClientCart = () => {
                         flex: 1
                       }}
                     >
-                      <i className="bi bi-trash"></i> Удалить
+                      <i className="bi bi-trash"></i> Отменить заказ
                     </button>
                   </>
                 )}
@@ -783,9 +891,9 @@ const ClientCart = () => {
             <div style={{ fontSize: '48px', marginBottom: '15px', color: '#d32f2f' }}>
               <i className="bi bi-exclamation-triangle-fill"></i>
             </div>
-            <h3 style={{ marginBottom: '10px' }}>Подтверждение удаления</h3>
+            <h3 style={{ marginBottom: '10px' }}>Подтверждение отмены</h3>
             <p style={{ marginBottom: '20px', color: '#666' }}>
-              Вы уверены, что хотите удалить заказ #{cartToDelete?.id}?
+              Вы уверены, что хотите отменить заказ #{cartToDelete?.id}?
               <br />
               <small>Это действие нельзя отменить.</small>
             </p>
@@ -805,7 +913,7 @@ const ClientCart = () => {
                 Отмена
               </button>
               <button
-                onClick={handleDeleteOrder}
+                onClick={handleCancelOrder}
                 style={{
                   padding: '10px 20px',
                   backgroundColor: '#dc3545',
@@ -816,7 +924,7 @@ const ClientCart = () => {
                 }}
                 disabled={deletingCart}
               >
-                {deletingCart ? 'Удаление...' : 'Удалить'}
+                {deletingCart ? 'Отмена...' : 'Отменить'}
               </button>
             </div>
           </div>
@@ -824,17 +932,21 @@ const ClientCart = () => {
       )}
 
       {/* Модальное окно оплаты */}
-      <PaymentModal
-        show={showPaymentModal}
-        onClose={() => {
-          setShowPaymentModal(false);
-          setCurrentOrderDetails(null);
-        }}
-        orderDetails={currentOrderDetails}
-        onConfirm={handlePaymentSuccess}
-        onClearCart={() => {}}
-        authToken={getAuthToken()}
-      />
+      {showPaymentModal && (
+        <PaymentModal 
+          show={showPaymentModal}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setPaymentOrderDetails(null);
+          }}
+          orderDetails={paymentOrderDetails}
+          onConfirm={handlePaymentConfirm}
+          onClearCart={handleClearCart}
+          authToken={getAuthToken()}
+        />
+      )}
+      
+      <ScrollToTopButton threshold={300} />
     </div>
   );
 };

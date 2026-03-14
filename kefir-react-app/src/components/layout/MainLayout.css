@@ -1,11 +1,15 @@
 /* src/components/layout/MainLayout.css */
+<<<<<<< HEAD
 
 /* ===== ОСНОВНОЙ ЛАЙАУТ ===== */
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 .main-layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   
+<<<<<<< HEAD
   /* Убираем фон - будет использоваться глобальный из global.css */
   background: transparent !important;
 }
@@ -14,6 +18,20 @@
 .app-header {
   background-color: #2c3e50;
   color: white;
+=======
+  /* Градиент фиксирован относительно окна */
+  background: linear-gradient(135deg, #9be69e 0%, #F5F5DC 100%) fixed;
+  
+  /* Или более подробно: */
+  background-image: linear-gradient(135deg, #f1f1e3 0%, #e6e6d7 100%);
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+.app-header {
+  background-color: #2c3e50;
+  color: rgb(128, 65, 65);
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   padding: 0 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -35,7 +53,11 @@
 .app-title {
   font-size: 24px;
   margin: 0;
+<<<<<<< HEAD
   color: white;
+=======
+  color: #d6d6d6;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   display: flex;
   align-items: center;
   gap: 10px;
@@ -47,11 +69,18 @@
 
 .app-subtitle {
   font-size: 14px;
+<<<<<<< HEAD
   color: #ecf0f1;
   margin-top: 5px;
 }
 
 /* ===== НАВИГАЦИЯ ===== */
+=======
+  color: #d6d6d6;
+  margin-top: 5px;
+}
+
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 .main-nav {
   flex: 1;
   overflow-x: auto;
@@ -69,7 +98,11 @@
   align-items: center;
   gap: 8px;
   background: rgba(255, 255, 255, 0.1);
+<<<<<<< HEAD
   color: white;
+=======
+  color: #d6d6d6;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   padding: 10px 16px;
@@ -87,9 +120,15 @@
 }
 
 .nav-button.active {
+<<<<<<< HEAD
   background: white;
   color: #2c3e50;
   border-color: white;
+=======
+  background: #d6d6d6;
+  color: #2c3e50;
+  border-color: #d6d6d6;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   font-weight: 600;
 }
 
@@ -101,13 +140,20 @@
   display: inline-block;
 }
 
+<<<<<<< HEAD
 /* ===== КНОПКА ВЫХОДА ===== */
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 .logout-button {
   display: flex;
   align-items: center;
   gap: 8px;
   background: #e74c3c;
+<<<<<<< HEAD
   color: white;
+=======
+  color: #d6d6d6;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   border: none;
   border-radius: 6px;
   padding: 10px 20px;
@@ -132,7 +178,10 @@
   display: inline-block;
 }
 
+<<<<<<< HEAD
 /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 .app-main {
   flex: 1;
   padding: 20px;
@@ -141,10 +190,16 @@
   width: 100%;
 }
 
+<<<<<<< HEAD
 /* ===== ПОДВАЛ ===== */
 .app-footer {
   background-color: #2c3e50;
   color: white;
+=======
+.app-footer {
+  background-color: #2c3e50;
+  color: #d6d6d6;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   padding: 15px 20px;
   margin-top: auto;
 }
@@ -177,7 +232,10 @@
   border-radius: 50%;
 }
 
+<<<<<<< HEAD
 /* ===== АДАПТИВНОСТЬ ===== */
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;

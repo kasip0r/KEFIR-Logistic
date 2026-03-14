@@ -22,14 +22,21 @@
   }
 }
 
+<<<<<<< HEAD
 /* Стили для курсора фломастера - ОРИГИНАЛЬНАЯ ФОРМА, ЦВЕТ ХОЛОДНЫЙ ХРОМ */
 .collector-app .cursor-felt-pen {
   cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><linearGradient id="chromeGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23ffffff"/><stop offset="50%" stop-color="%23b8c6db"/><stop offset="100%" stop-color="%235f7285"/></linearGradient></defs><path d="M8 28l16-16-4-4L4 24z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/><path d="M24 4l4 4-16 16-4-4z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/></svg>') 4 28, pointer !important;
+=======
+/* Стили для курсора фломастера - ТОЛЬКО для элементов с этим классом */
+.collector-app .cursor-felt-pen {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, pointer !important;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 }
 
 /* Дополнительно для кнопок, которые должны иметь курсор-указатель */
 .collector-app .cursor-felt-pen,
 .collector-app button.cursor-felt-pen,
+<<<<<<< HEAD
 .collector-app input[type="button"].cursor-felt-pen,
 .collector-app input[type="submit"].cursor-felt-pen,
 .collector-app input[type="reset"].cursor-felt-pen,
@@ -44,10 +51,15 @@
 .collector-app .cursor-felt-pen:hover {
   filter: brightness(1.1);
   transition: filter 0.2s ease;
+=======
+.collector-app [role="button"].cursor-felt-pen {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>') 4 28, pointer !important;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 }
 
 /* Для отключенных кнопок */
 .collector-app button.cursor-felt-pen:disabled,
+<<<<<<< HEAD
 .collector-app .cursor-felt-pen:disabled,
 .collector-app a.cursor-felt-pen.disabled,
 .collector-app [role="button"].cursor-felt-pen:disabled,
@@ -58,6 +70,33 @@
   pointer-events: none;
 }
 
+=======
+.collector-app .cursor-felt-pen:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.5;
+}
+
+/* УБИРАЕМ ГЛОБАЛЬНЫЕ СЕЛЕКТОРЫ! */
+/* Удаляем или комментируем эти блоки:
+
+.collector-app * {
+  cursor: url(...) !important;
+}
+
+button, input, .btn, [onclick] {
+  cursor: url(...) !important;
+}
+
+.collector-app button,
+.collector-app input[type="button"],
+.collector-app input[type="submit"],
+.collector-app [role="button"] {
+  cursor: url(...) !important;
+}
+
+*/
+
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 /* Эффекты наведения для элементов */
 .order-card-hover:hover {
   transform: translateY(-2px);
@@ -81,6 +120,7 @@
 .print-effect {
   text-shadow: 0 1px 0 rgba(0,0,0,0.1);
   letter-spacing: 0.3px;
+<<<<<<< HEAD
 }
 
 /* Для мобильных устройств отключаем кастомный курсор */
@@ -99,4 +139,6 @@
   .collector-app [role="button"].cursor-felt-pen:disabled {
     cursor: default !important;
   }
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 }

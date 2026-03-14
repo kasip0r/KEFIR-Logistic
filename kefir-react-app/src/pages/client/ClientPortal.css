@@ -1,13 +1,23 @@
+<<<<<<< HEAD
 /* src/pages/client/ClientPortal.css */
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 
 /* ===== ОСНОВНЫЕ СТИЛИ ===== */
 .client-portal-container {
   position: relative;
   min-height: 100vh;
   width: 100%;
+<<<<<<< HEAD
   /* Убираем белый фон, чтобы был виден глобальный фон */
   background: transparent !important;
   overflow-x: hidden;
+=======
+  padding: 20px;
+  background-color: #f8f9fa;
+  overflow-x: hidden;
+  /* УДАЛИТЕ padding-top: 120px; - отступ уже есть в MainLayout */
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 }
 
 .client-portal-layout {
@@ -15,9 +25,14 @@
   position: relative;
   width: 100%;
   gap: 20px;
+<<<<<<< HEAD
   align-items: flex-start;
   /* Переносим padding сюда, чтобы по краям был виден фон */
   padding: 20px;
+=======
+  align-items: flex-start; /* ВЫРАВНИВАНИЕ ПО ВЕРХУ */
+  
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 }
 
 /* ===== КАТАЛОГ ТОВАРОВ (78%) ===== */
@@ -25,6 +40,10 @@
   flex: 0 0 78%;
   width: 78%;
   max-width: 78%;
+<<<<<<< HEAD
+=======
+  margin-top: -20px; /* Убедитесь, что нет отступа сверху */
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 }
 
 .catalog-card {
@@ -72,8 +91,13 @@
   max-width: 20%;
   position: fixed;
   right: 150px;
+<<<<<<< HEAD
   top: 110px;
   height: calc(100vh - 130px);
+=======
+  top: 110px; /* СООТВЕТСТВУЕТ ВЫСОТЕ ШАПКИ */
+  height: calc(100vh - 130px); /* ФИКСИРОВАННАЯ ВЫСОТА */
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -302,7 +326,10 @@
   opacity: 0.5;
   z-index: 1040;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 .warehouse-info {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -326,7 +353,10 @@
 .main-warehouse {
   background: linear-gradient(135deg, #2196F3 0%, #1976d2 100%);
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
 /* ===== СКРОЛЛБАР ===== */
 .catalog-card .card-body::-webkit-scrollbar,
 .cart-content::-webkit-scrollbar {
@@ -354,7 +384,10 @@
 @media (max-width: 1200px) {
   .client-portal-layout {
     flex-direction: column;
+<<<<<<< HEAD
     padding: 15px;
+=======
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
   }
   
   .catalog-section,
@@ -388,7 +421,11 @@
 }
 
 @media (max-width: 768px) {
+<<<<<<< HEAD
   .client-portal-layout {
+=======
+  .client-portal-container {
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
     padding: 10px;
   }
   
@@ -449,4 +486,8 @@
     max-width: 1800px;
     margin: 0 auto;
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada

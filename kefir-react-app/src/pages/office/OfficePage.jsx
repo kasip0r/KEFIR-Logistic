@@ -563,9 +563,14 @@ ${itemsList}
                     background-position: 0 100% !important;
                 }
                 
+<<<<<<< HEAD
                 /* Фломастер цвета ХОЛОДНЫЙ ХРОМ */
                 .cursor-felt-pen {
                     cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><linearGradient id="chromeGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23ffffff"/><stop offset="50%" stop-color="%23b8c6db"/><stop offset="100%" stop-color="%235f7285"/></linearGradient></defs><path d="M8 28l16-16-4-4L4 24z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/><path d="M24 4l4 4-16 16-4-4z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/></svg>') 4 28, auto !important;
+=======
+                .cursor-felt-pen {
+                    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23f59e0b"/></svg>') 4 28, auto !important;
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
                 }
                 
                 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
@@ -1096,7 +1101,12 @@ const styles = {
     officePage: {
         display: 'flex',
         height: '100vh',
+<<<<<<< HEAD
         cursor: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><defs><linearGradient id="chromeGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23ffffff"/><stop offset="50%" stop-color="%23b8c6db"/><stop offset="100%" stop-color="%235f7285"/></linearGradient></defs><path d="M8 28l16-16-4-4L4 24z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/><path d="M24 4l4 4-16 16-4-4z" fill="url(%23chromeGradient)" stroke="%23333" stroke-width="1"/></svg>\') 4 28, auto',
+=======
+        backgroundColor: '#f9fafb',
+        cursor: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23f59e0b"/></svg>\') 4 28, auto',
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
         fontFamily: '\'Comic Neue\', cursive, sans-serif',
         position: 'relative',
         overflow: 'hidden'

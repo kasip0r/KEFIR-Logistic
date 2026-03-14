@@ -1,10 +1,9 @@
-// *** НАЧАЛО ФАЙЛА PaymentModal.jsx ***
-
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './PaymentModal.css';
 
 const PaymentModal = ({ show, onClose, orderDetails, onConfirm, onClearCart, authToken }) => {
+
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -50,13 +49,9 @@ const PaymentModal = ({ show, onClose, orderDetails, onConfirm, onClearCart, aut
     } catch (e) {
       console.error('❌ Ошибка получения userId:', e);
     }
-    
-    if (orderDetails?.userId) {
-      return orderDetails.userId;
-    }
-    
+
     return null;
-  }, [orderDetails]);
+  }, []);
 
   const getAuthHeaders = useCallback(() => {
     if (!authToken) return {};
@@ -148,7 +143,7 @@ const PaymentModal = ({ show, onClose, orderDetails, onConfirm, onClearCart, aut
               // Карты нет - показываем форму добавления
               setAccountInfo({
                 userId: userId,
-                balance: balanceResponse.data?.balance || 0,
+                balance: balanceResponse.data?.balance !== undefined ? balanceResponse.data.balance : 0,
                 accountNumber: `PA-${userId.toString().padStart(8, '0')}`,
                 cardNumber: null,
                 cardBalance: 0,
@@ -203,7 +198,7 @@ const PaymentModal = ({ show, onClose, orderDetails, onConfirm, onClearCart, aut
       const cleanCardNumber = cardNumber.replace(/\s/g, '');
       
       const accountResponse = await axios.post(
-        `${API_BASE_URL}/payments/create-account`,
+        `${API_BASE_URL}/payments/create-client-account`,
         {
           user_id: userId,
           role: 'client'
@@ -309,21 +304,19 @@ const PaymentModal = ({ show, onClose, orderDetails, onConfirm, onClearCart, aut
     }
   };
 
-  // Обработка выбора способа оплаты "Карта"
   const handleCardPaymentClick = () => {
-    if (!accountInfo.cardId) {
-      setShowAddCardForm(true);
-      return;
-    }
-    
-    setSelectedCardNumber(accountInfo.cardNumber);
-    setCardBalance(accountInfo.cardBalance);
-    setSelectedCardId(accountInfo.cardId);
-    setShowCvvModal(true);
-  };
+  if (!accountInfo.cardId) {
+    setShowAddCardForm(true);
+    return;
+  }
+  
+  setSelectedCardNumber(accountInfo.cardNumber);
+  setCardBalance(accountInfo.cardBalance);
+  setSelectedCardId(accountInfo.cardId);
+  setShowCvvModal(true);
+};
 
-  // Подтверждение оплаты по CVV
- // Подтверждение оплаты по CVV
+  // Подтверждение оплаты по CVV - ИСПРАВЛЕННАЯ ВЕРСИЯ (без дублирования)
 const handleCvvConfirm = async () => {
   if (cvvValue.length !== 3) {
     setCvvError('CVV должен содержать 3 цифры');
@@ -333,40 +326,52 @@ const handleCvvConfirm = async () => {
   setPaymentProcessing(true);
   
   try {
-    // 1. СНАЧАЛА СОЗДАЕМ ЗАКАЗ
-    const orderData = {
-      userId: getUserIdFromStorage(),
-      items: orderDetails.items.map(item => ({
-        productId: item.productId,
-        productName: item.productName || item.name,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      totalAmount: orderDetails.totalAmount,
-      status: 'pending'
-    };
-
-    const orderResponse = await axios.post(
-      `${API_BASE_URL}/orders`,
-      orderData,
-      getAuthHeaders()
-    );
-
-    if (!orderResponse.data || !orderResponse.data.success) {
-      throw new Error('Ошибка при создании заказа');
+    const orderId = orderDetails?.orderId;
+    const orderNumber = orderDetails?.orderNumber;
+    
+    if (!orderNumber) {
+      throw new Error('Отсутствует ID заказа');
     }
 
-    const realOrderId = orderResponse.data.id || orderResponse.data.orderId;
+    // Проверяем, существует ли заказ
+    try {
+      const checkResponse = await axios.get(
+        `${API_BASE_URL}/orders/${orderId}`,
+        getAuthHeaders()
+      );
+      
+      if (!checkResponse.data || !checkResponse.data.id) {
+        throw new Error('Заказ не найден');
+      }
+      
+      // Проверяем статус заказа
+      if (checkResponse.data.status !== 'PENDING' && checkResponse.data.status !== 'created') {
+        setPaymentError('Этот заказ уже оплачен или обработан');
+        setPaymentProcessing(false);
+        setTimeout(() => window.location.reload(), 2000);
+        return;
+      }
+      
+      console.log('✅ Заказ существует, статус:', checkResponse.data.status);
+      
+    } catch (checkErr) {
+      console.error('❌ Ошибка проверки заказа:', checkErr);
+      setPaymentError('Заказ не найден или недоступен');
+      setPaymentProcessing(false);
+      setTimeout(() => window.location.reload(), 2000);
+      return;
+    }
 
-    // 2. ПОТОМ СПИСЫВАЕМ ДЕНЬГИ С КАРТЫ
+    // ✅ ТОЛЬКО ОДИН ЗАПРОС - списание денег с карты
     const response = await axios.post(
       `${API_BASE_URL}/payments/card-payment`,
       {
         card_id: selectedCardId,
         user_id: getUserIdFromStorage(),
         amount: orderDetails.totalAmount,
-        order_id: realOrderId,
-        cvv: cvvValue
+        order_id: orderNumber,
+        cvv: cvvValue,
+        warehouse: orderDetails.warehouse  // Добавляем склад, если нужен
       },
       getAuthHeaders()
     );
@@ -376,16 +381,8 @@ const handleCvvConfirm = async () => {
       setCvvValue('');
       setCvvError('');
       
-      // 3. ПОДТВЕРЖДАЕМ ОПЛАТУ ЗАКАЗА
-      try {
-        await axios.post(
-          `${API_BASE_URL}/orders/${realOrderId}/confirm-payment`,
-          { amount: orderDetails.totalAmount },
-          getAuthHeaders()
-        );
-      } catch (confirmErr) {
-        console.error('❌ Ошибка списания товаров:', confirmErr);
-      }
+      // 🚫 НЕ вызываем /payments/confirm - card-payment уже всё сделал!
+      // Метод card-payment должен сам обновить статус заказа и списать товары
       
       setPaymentSuccess(true);
       setAccountInfo(prev => ({
@@ -397,7 +394,8 @@ const handleCvvConfirm = async () => {
       if (onConfirm) {
         onConfirm({
           ...response.data,
-          orderId: realOrderId
+          //orderId: orderId,
+          orderNumber: orderDetails.orderNumber
         });
       }
       if (onClearCart) onClearCart();
@@ -421,69 +419,95 @@ const handleCvvConfirm = async () => {
     setPaymentProcessing(false);
   }
 };
+
   const handleCvvClose = () => {
     setShowCvvModal(false);
     setCvvValue('');
     setCvvError('');
   };
 
-  // Оплата с баланса
- // Оплата с баланса
+// Оплата с баланса - ИСПРАВЛЕННАЯ ВЕРСИЯ (без confirm)
 const handleBalancePayment = async () => {
-  if (paymentProcessing) return;
+  
+  if (!orderDetails) {
+    console.error('❌ orderDetails is null!');
+    setPaymentError('Ошибка: нет данных заказа');
+    setPaymentProcessing(false);
+    return;
+  }
+  
+  const orderId = orderDetails?.orderId;
+  const orderNumber = orderDetails?.orderNumber;
+  
+  if (!orderId) {
+    console.error('❌ orderId отсутствует в orderDetails!', orderDetails);
+    setPaymentError('Ошибка: отсутствует ID заказа');
+    setPaymentProcessing(false);
+    return;
+  }
   
   setPaymentProcessing(true);
   setPaymentError(null);
   
   try {
-    // 1. СНАЧАЛА СОЗДАЕМ ЗАКАЗ
-    const orderData = {
-      userId: getUserIdFromStorage(),
-      items: orderDetails.items.map(item => ({
-        productId: item.productId,
-        productName: item.productName || item.name,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      totalAmount: orderDetails.totalAmount,
-      status: 'pending'
-    };
-
-    const orderResponse = await axios.post(
-      `${API_BASE_URL}/orders`,
-      orderData,
-      getAuthHeaders()
-    );
-
-    if (!orderResponse.data || !orderResponse.data.success) {
-      throw new Error('Ошибка при создании заказа');
+    // Проверяем, существует ли заказ
+    try {
+      const checkResponse = await axios.get(
+        `${API_BASE_URL}/orders/${orderId}`,
+        getAuthHeaders()
+      );
+      
+      if (!checkResponse.data || !checkResponse.data.id) {
+        throw new Error('Заказ не найден');
+      }
+      
+      if (checkResponse.data.status !== 'PENDING' && checkResponse.data.status !== 'created') {
+        setPaymentError('Этот заказ уже оплачен или обработан');
+        setPaymentProcessing(false);
+        setTimeout(() => window.location.reload(), 2000);
+        return;
+      }
+      
+      console.log('✅ Заказ существует, статус:', checkResponse.data.status);
+      
+    } catch (checkErr) {
+      console.error('❌ Ошибка проверки заказа:', checkErr);
+      setPaymentError('Заказ не найден или недоступен');
+      setPaymentProcessing(false);
+      setTimeout(() => window.location.reload(), 2000);
+      return;
     }
 
-    const realOrderId = orderResponse.data.id || orderResponse.data.orderId;
-    
-    // 2. ПОТОМ СПИСЫВАЕМ ДЕНЬГИ С БАЛАНСА
+    // ✅ ТОЛЬКО СПИСЫВАЕМ ДЕНЬГИ С БАЛАНСА
     const withdrawResponse = await axios.post(
       `${API_BASE_URL}/payments/withdraw`,
       {
         user_id: getUserIdFromStorage(),
         amount: orderDetails.totalAmount,
-        order_id: realOrderId,
-        description: `Оплата заказа #${realOrderId}`
+        order_id: orderNumber,
+        description: `Оплата заказа #${orderNumber}`
       },
       getAuthHeaders()
     );
 
     if (withdrawResponse.data && withdrawResponse.data.status === 'success') {
       
-      // 3. ПОДТВЕРЖДАЕМ ОПЛАТУ
+      // 🚫 НЕ вызываем /payments/confirm - он не нужен!
+      // Метод withdraw уже создал транзакцию и списал деньги
+      
+      // Обновляем статус заказа (опционально)
       try {
         await axios.post(
-          `${API_BASE_URL}/orders/${realOrderId}/confirm-payment`,
-          { amount: orderDetails.totalAmount },
+          `${API_BASE_URL}/orders/${orderId}/pay`,
+          {
+            amount: orderDetails.totalAmount,
+            paymentMethod: 'balance',
+            user_id: getUserIdFromStorage()
+          },
           getAuthHeaders()
         );
-      } catch (confirmErr) {
-        console.error('❌ Ошибка списания товаров:', confirmErr);
+      } catch (payErr) {
+        console.error('❌ Ошибка обновления статуса заказа:', payErr);
       }
       
       setPaymentSuccess(true);
@@ -492,7 +516,8 @@ const handleBalancePayment = async () => {
       if (onConfirm) {
         onConfirm({
           ...withdrawResponse.data,
-          orderId: realOrderId
+          orderId: orderId,
+          orderNumber: orderNumber
         });
       }
       if (onClearCart) onClearCart();
@@ -810,5 +835,3 @@ const handleBalancePayment = async () => {
 };
 
 export default PaymentModal;
-
-// *** КОНЕЦ ФАЙЛА PaymentModal.jsx ***

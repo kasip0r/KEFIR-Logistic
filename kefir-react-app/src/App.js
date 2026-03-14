@@ -5,7 +5,7 @@ import './App.css';
 import './styles/global.css';
 
 // Import API service
-import apiService from './services/api';
+import apiService from './services/api';  // ← ИСПРАВЛЕНО!
 
 // Layout Components
 import MainLayout from './components/layout/MainLayout';
@@ -71,12 +71,12 @@ function App() {
     setUserRole('');
     setUserData(null);
     setError(null);
-    apiService.utils.logout();
+    apiService.utils.logout();  // ← ИСПОЛЬЗУЕМ apiService!
   }, []);
 
   // Проверка авторизации по localStorage
   const checkAuthFromStorage = useCallback(() => {
-    const user = apiService.utils.getUser();
+    const user = apiService.utils.getUser();  // ← ИСПОЛЬЗУЕМ apiService!
     
     if (user) {
       const normalizedRole = normalizeRole(user.role);
@@ -109,14 +109,16 @@ function App() {
     }, 500);
   }, [checkAuthFromStorage]);
 
-  // Обработчик входа
+  // ✅ ИСПРАВЛЕННЫЙ ОБРАБОТЧИК ВХОДА
   const handleLogin = async (credentials) => {
     try {
       setLoading(true);
       setError(null);
       
+      // Используем apiService вместо fetch!
       const response = await apiService.authAPI.login(credentials);
       
+      // response уже содержит данные из apiService
       const user = response.user;
       const normalizedRole = normalizeRole(user.role);
       
@@ -132,6 +134,7 @@ function App() {
       let errorMessage = 'Ошибка входа';
       
       if (error.response) {
+        // Обработка ошибок от axios
         const data = error.response.data;
         if (data.error === 'Неверный логин или пароль') {
           errorMessage = 'Неверное имя пользователя или пароль';
@@ -186,25 +189,7 @@ function App() {
   // Защищенный роут компонент
   const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     if (!initialized || isAuthenticated === null || loading) {
-      return (
-        <div className="flex-center" style={{ 
-          height: '100vh',
-          background: 'transparent'  // ← ИЗМЕНЕНО: прозрачный фон
-        }}>
-          <div className="text-center" style={{ color: '#333' }}>
-            <div style={{
-              width: '50px',
-              height: '50px',
-              margin: '0 auto 20px',
-              border: '3px solid rgba(51, 51, 51, 0.3)',
-              borderTop: '3px solid #333',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }} />
-            <div>Загрузка приложения...</div>
-          </div>
-        </div>
-      );
+      return <div className="loading-spinner">Загрузка...</div>;
     }
 
     if (!isAuthenticated) {
@@ -233,25 +218,7 @@ function App() {
   // Защищенный роут для Office
   const ProtectedOfficeRoute = ({ children, allowedRoles = [ROLES.OFFICE] }) => {
     if (!initialized || isAuthenticated === null || loading) {
-      return (
-        <div className="flex-center" style={{ 
-          height: '100vh',
-          background: 'transparent'  // ← ИЗМЕНЕНО: прозрачный фон
-        }}>
-          <div className="text-center" style={{ color: '#333' }}>
-            <div style={{
-              width: '50px',
-              height: '50px',
-              margin: '0 auto 20px',
-              border: '3px solid rgba(51, 51, 51, 0.3)',
-              borderTop: '3px solid #333',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }} />
-            <div>Загрузка приложения...</div>
-          </div>
-        </div>
-      );
+      return <div className="loading-spinner">Загрузка...</div>;
     }
 
     if (!isAuthenticated) {
@@ -276,25 +243,7 @@ function App() {
   // Защищенный роут для Collector
   const ProtectedCollectorRoute = ({ children, allowedRoles = [ROLES.COLLECTOR] }) => {
     if (!initialized || isAuthenticated === null || loading) {
-      return (
-        <div className="flex-center" style={{ 
-          height: '100vh',
-          background: 'transparent'  // ← ИЗМЕНЕНО: прозрачный фон
-        }}>
-          <div className="text-center" style={{ color: '#333' }}>
-            <div style={{
-              width: '50px',
-              height: '50px',
-              margin: '0 auto 20px',
-              border: '3px solid rgba(51, 51, 51, 0.3)',
-              borderTop: '3px solid #333',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite'
-            }} />
-            <div>Загрузка приложения...</div>
-          </div>
-        </div>
-      );
+      return <div className="loading-spinner">Загрузка...</div>;
     }
 
     if (!isAuthenticated) {
@@ -316,30 +265,16 @@ function App() {
     );
   };
 
-  // Лоадер при начальной загрузке
   if (loading && isAuthenticated === null) {
     return (
       <div className="flex-center" style={{ 
         height: '100vh',
-        background: 'transparent'  // ← ИЗМЕНЕНО: прозрачный фон
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
       }}>
-        <div className="text-center" style={{ color: '#333' }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            margin: '0 auto 20px',
-            border: '3px solid rgba(51, 51, 51, 0.3)',
-            borderTop: '3px solid #333',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
+        <div className="text-center text-white">
+          <div className="spinner" />
           <div>Загрузка приложения...</div>
         </div>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     );
   }

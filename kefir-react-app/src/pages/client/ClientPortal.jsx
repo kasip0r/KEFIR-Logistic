@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import PaymentModal from './PaymentModal';
+import ScrollToTopButton from '../../components/button/ScrollToTopButton';
 import '../../App.css';
 import './ClientPortal.css';
 
@@ -17,9 +18,11 @@ const ClientPortal = () => {
   const [showProductModal, setShowProductModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('name-asc');
-  // Добавьте это состояние
-const [showPaymentModal, setShowPaymentModal] = useState(false);
-const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
+  const [userWarehouse, setUserWarehouse] = useState('usersklad'); // ← добавить эту строку
+
+  const API_BASE_URL = 'http://localhost:8080/api';
 
   const getAuthToken = useCallback(() => {
     return localStorage.getItem('token');
@@ -34,8 +37,9 @@ const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
 
   const getAuthHeaders = useCallback(() => {
     const token = getCleanToken();
+    
     if (!token) {
-      console.warn('Токен не найден или пустой');
+      console.warn('❌ Токен не найден или пустой');
       return {};
     }
 
@@ -52,88 +56,123 @@ const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
     };
   }, [getCleanToken]);
 
-  // В методе fetchProducts внутри ClientPortal.jsx
-const fetchProducts = useCallback(async () => {
-  try {
-    setLoading(true);
-    const headers = getAuthHeaders();
-    
-    // ИЗМЕНЕНИЕ 1: Новый URL для клиентских товаров
-    const response = await axios.get('http://localhost:8080/api/client/products', headers);
-    const responseData = response.data;
-    
-    // ИЗМЕНЕНИЕ 2: Новый формат ответа (объект с полем products)
-    let productsData = [];
-    if (responseData.success && responseData.products) {
-      productsData = responseData.products;
-      
-      // Логируем информацию о складе для отладки
-      console.log('✅ Товары получены со склада:', responseData.warehouse);
-      console.log('📍 Город пользователя:', responseData.userCity);
-      console.log('📦 Количество товаров:', productsData.length);
-    } else if (Array.isArray(responseData)) {
-      // Обратная совместимость: если ответ массив (старый формат)
-      productsData = responseData;
-      console.warn('⚠️ Получен старый формат ответа (массив)');
-    } else {
-      console.error('❌ Неожиданный формат ответа:', responseData);
-      throw new Error('Неверный формат ответа от сервера');
-    }
-    
-    productsData.sort((a, b) => a.name.localeCompare(b.name));
-    
-    setProducts(productsData);
-    
-    // Извлекаем категории из полученных товаров
-    const uniqueCategories = ['Все', ...new Set(productsData.map(p => p.category))];
-    setCategories(uniqueCategories);
-    setFilteredProducts(productsData);
-    setError(null);
-    
-    // Сохраняем информацию о складе в состоянии (для отображения)
-    if (responseData.warehouse) {
-      console.log(`🏪 Текущий склад: ${responseData.warehouse}`);
-      // Можно добавить состояние для отображения информации о складе
-      // setCurrentWarehouse(responseData.warehouse);
-    }
-    
-  } catch (err) {
-    console.error('❌ Ошибка при загрузке товаров:', err);
-    
-    // Улучшенная обработка ошибок
-    if (err.response) {
-      const status = err.response.status;
-      const errorData = err.response.data;
-      
-      if (status === 401) {
-        setError('Сессия истекла. Пожалуйста, войдите снова.');
-        localStorage.removeItem('token');
-        // Можно добавить редирект на логин
-        // window.location.href = '/login';
-      } else if (status === 403) {
-        setError('Доступ запрещен. Недостаточно прав.');
-      } else if (status === 404) {
-        setError('Товары не найдены на вашем складе.');
-      } else if (errorData && errorData.message) {
-        setError(`Ошибка: ${errorData.message}`);
-      } else {
-        setError(`Ошибка сервера (${status}). Пожалуйста, попробуйте позже.`);
+  // ✅ Функция для получения реального userId из localStorage
+  const getRealUserId = useCallback(() => {
+    try {
+      const userJson = localStorage.getItem('user');
+      if (userJson) {
+        const user = JSON.parse(userJson);
+        console.log('👤 getRealUserId - реальный ID:', user.id);
+        return user.id;
       }
-    } else if (err.request) {
-      setError('Нет ответа от сервера. Проверьте подключение к сети.');
-    } else if (err.message) {
-      setError(`Ошибка: ${err.message}`);
-    } else {
-      setError('Неизвестная ошибка при загрузке товаров.');
+    } catch (e) {
+      console.error('❌ Ошибка получения userId:', e);
     }
-    
-    setProducts([]);
-    setFilteredProducts([]);
-    setCategories(['Все']);
-  } finally {
-    setLoading(false);
-  }
-}, [getAuthHeaders]);
+    return null;
+  }, []);
+
+  const extractUserIdFromToken = useCallback((token) => {
+    try {
+      if (!token) return null;
+      
+      const cleanToken = token.replace('Bearer ', '');
+      
+      if (cleanToken.startsWith('auth-')) {
+        // Пробуем получить реальный ID из localStorage
+        const realId = getRealUserId();
+        if (realId) return realId;
+        return 1; // fallback
+      }
+      
+      if (cleanToken.includes('.')) {
+        const payload = JSON.parse(atob(cleanToken.split('.')[1]));
+        return payload.userId || payload.id || payload.sub;
+      }
+      
+      return null;
+    } catch (err) {
+      console.error('Ошибка извлечения userId:', err);
+      return null;
+    }
+  }, [getRealUserId]);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const headers = getAuthHeaders();
+      
+      const response = await axios.get('http://localhost:8080/api/client/products', headers);
+      const responseData = response.data;
+
+      if (responseData.warehouse) {
+      setUserWarehouse(responseData.warehouse);
+     console.log('🏪 Сохранён склад пользователя:', responseData.warehouse);
+      }
+      
+      let productsData = [];
+      if (responseData.success && responseData.products) {
+        productsData = responseData.products;
+        
+        console.log('✅ Товары получены со склада:', responseData.warehouse);
+        console.log('📍 Город пользователя:', responseData.userCity);
+        console.log('📦 Количество товаров:', productsData.length);
+
+      } else if (Array.isArray(responseData)) {
+        productsData = responseData;
+        console.warn('⚠️ Получен старый формат ответа (массив)');
+      } else {
+        console.error('❌ Неожиданный формат ответа:', responseData);
+        throw new Error('Неверный формат ответа от сервера');
+      }
+      
+      productsData.sort((a, b) => a.name.localeCompare(b.name));
+      
+      setProducts(productsData);
+      
+      const uniqueCategories = ['Все', ...new Set(productsData.map(p => p.category))];
+      setCategories(uniqueCategories);
+      setFilteredProducts(productsData);
+      setError(null);
+      
+      if (responseData.warehouse) {
+        console.log(`🏪 Текущий склад: ${responseData.warehouse}`);
+      }
+      
+    } catch (err) {
+      console.error('❌ Ошибка при загрузке товаров:', err);
+      
+      if (err.response) {
+        const status = err.response.status;
+        const errorData = err.response.data;
+        
+        if (status === 401) {
+          setError('Сессия истекла. Пожалуйста, войдите снова.');
+          localStorage.removeItem('token');
+        } else if (status === 403) {
+          setError('Доступ запрещен. Недостаточно прав.');
+        } else if (status === 404) {
+          setError('Товары не найдены на вашем складе.');
+        } else if (errorData && errorData.message) {
+          setError(`Ошибка: ${errorData.message}`);
+        } else {
+          setError(`Ошибка сервера (${status}). Пожалуйста, попробуйте позже.`);
+        }
+      } else if (err.request) {
+        setError('Нет ответа от сервера. Проверьте подключение к сети.');
+      } else if (err.message) {
+        setError(`Ошибка: ${err.message}`);
+      } else {
+        setError('Неизвестная ошибка при загрузке товаров.');
+      }
+      
+      setProducts([]);
+      setFilteredProducts([]);
+      setCategories(['Все']);
+    } finally {
+      setLoading(false);
+    }
+  }, [getAuthHeaders]);
+
   useEffect(() => {
     const checkAuth = () => {
       const token = getAuthToken();
@@ -231,35 +270,9 @@ const fetchProducts = useCallback(async () => {
     ));
   }, [cart, products, removeFromCart]);
 
- const calculateTotal = useMemo(() => {
-  return Number(cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2));
-}, [cart]);
-
-const extractUserIdFromToken = useCallback((token) => {
-  try {
-    if (!token) return null;
-    
-    const cleanToken = token.replace('Bearer ', '');
-    
-    // Для auth-токенов
-    if (cleanToken.startsWith('auth-')) {
-      // TODO: Получить userId из auth сервиса
-      // Пока возвращаем заглушку
-      return 1;
-    }
-    
-    // Для JWT токенов
-    if (cleanToken.includes('.')) {
-      const payload = JSON.parse(atob(cleanToken.split('.')[1]));
-      return payload.userId || payload.id || payload.sub;
-    }
-    
-    return null;
-  } catch (err) {
-    console.error('Ошибка извлечения userId:', err);
-    return null;
-  }
-}, []);
+  const calculateTotal = useMemo(() => {
+    return Number(cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2));
+  }, [cart]);
 
 const handleCheckout = useCallback(async () => {
   if (cart.length === 0) {
@@ -276,45 +289,123 @@ const handleCheckout = useCallback(async () => {
   try {
     setOrderStatus('processing');
     
-    // Извлекаем userId из токена
-    const userId = extractUserIdFromToken(token);
+    const realUserId = getRealUserId();
     
-    // НЕ СОЗДАЕМ ЗАКАЗ НА СЕРВЕРЕ!
-    // Просто подготавливаем данные для модального окна
+    if (!realUserId) {
+      throw new Error('Не удалось получить ID пользователя');
+    }
+    
+    console.log('👤 Использую userId:', realUserId);
+    console.log('🏪 Склад пользователя:', userWarehouse);
+    
+    // 1. Создаём корзину в бэкенде
+    const createCartResponse = await axios.post(
+      `${API_BASE_URL}/cart/client/${realUserId}`,
+      {},
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    
+    console.log('✅ Корзина создана:', createCartResponse.data);
+    
+    const cartId = createCartResponse.data.id;
+    
+// 2. Добавляем товары в корзину с указанием склада
+for (const item of cart) {
+
+  console.log('📦 Отправка в корзину:', {
+  cartId,
+  productId: item.id,
+  quantity: item.quantity,
+  price: item.price,
+  warehouse: userWarehouse
+});
+
+  await axios.post(
+  `${API_BASE_URL}/cart/${cartId}/add`,
+  null,
+  {
+    params: { 
+      productId: item.id, 
+      quantity: item.quantity, 
+      price: item.price,
+      warehouse: userWarehouse
+    },
+    paramsSerializer: params => {
+      return Object.entries(params)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+        .join('&');
+    },
+    headers: { 'Authorization': `Bearer ${token}` }
+  }
+);  
+}
+    
+    console.log('✅ Товары добавлены в корзину');
+    
+    // 3. Создаём заказ из корзины с указанием склада
+    const createOrderData = {
+      clientId: realUserId,
+      cartId: cartId,
+      items: cart.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      totalAmount: calculateTotal,
+      warehouse: userWarehouse  // ← склад из состояния
+    };
+    
+    console.log('📦 Создание заказа со складом:', userWarehouse);
+    
+    const orderResponse = await axios.post(
+      `${API_BASE_URL}/orders`,
+      createOrderData,
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    
+    console.log('✅ Заказ создан:', orderResponse.data);
+    
+    // 4. Передаём данные в модалку
     const orderDetails = {
-      userId: userId,
+      userId: realUserId,
+      orderId: orderResponse.data.id || orderResponse.data.orderId,
+      orderNumber: orderResponse.data.orderNumber,
+      cartId: cartId,
+      totalAmount: calculateTotal,
+      warehouse: userWarehouse,  // ← передаём склад в модалку
       items: cart.map(item => ({
         productId: item.id,
         productName: item.name,
         quantity: item.quantity,
         price: item.price
-      })),
-      totalAmount: calculateTotal
+      }))
     };
     
-    // Открываем модальное окно оплаты
+    console.log('🔥🔥🔥 orderDetails для оплаты:', orderDetails);
+    
     setCurrentOrderDetails(orderDetails);
     setShowPaymentModal(true);
-    
     setOrderStatus(null);
     
   } catch (err) {
-    console.error('Ошибка при подготовке к оплате:', err);
+    console.error('❌ Ошибка:', err);
     setOrderStatus('error');
     setTimeout(() => setOrderStatus(null), 3000);
   }
-}, [cart, calculateTotal, getAuthToken, extractUserIdFromToken]);
+}, [cart, calculateTotal, getAuthToken, getRealUserId, userWarehouse]);
 
-const handlePaymentSuccess = useCallback((paymentData) => {
-  console.log('✅ Оплата успешна:', paymentData);
-  setOrderStatus('success');
-  setCart([]); // Очищаем корзину
-  fetchProducts(); // ← ЭТО ОБНОВИТ ТОВАРЫ
-  setTimeout(() => setOrderStatus(null), 3000);
-}, [fetchProducts]);
+  const handlePaymentSuccess = useCallback((paymentData) => {
+    console.log('✅ Оплата успешна:', paymentData);
+    setOrderStatus('success');
+    setCart([]);
+    fetchProducts();
+    setTimeout(() => setOrderStatus(null), 3000);
+  }, [fetchProducts]);
 
   return (
     <div className="client-portal-container">
+      <ScrollToTopButton threshold={300} />
+
       {orderStatus === 'success' && (
         <div className="alert alert-success alert-dismissible fade show" role="alert">
           ✅ Заказ успешно оформлен!
@@ -610,8 +701,6 @@ const handlePaymentSuccess = useCallback((paymentData) => {
               >
                 <i className="bi bi-trash me-1"></i> Очистить корзину
               </button>
-              
-       
             </div>
           </div>
         </div>
@@ -739,18 +828,17 @@ const handlePaymentSuccess = useCallback((paymentData) => {
         <div className="modal-backdrop show fade" onClick={() => setShowProductModal(false)}></div>
       )}
 
-      {/* Использование отдельного компонента модального окна */}
-<PaymentModal
-  show={showPaymentModal}
-  onClose={() => {
-    setShowPaymentModal(false);
-    setCurrentOrderDetails(null);
-  }}
-  orderDetails={currentOrderDetails}
-  onConfirm={handlePaymentSuccess}
-  onClearCart={() => setCart([])}
-  authToken={getAuthToken()} // Передаем токен для авторизации
-/>
+      <PaymentModal
+        show={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setCurrentOrderDetails(null);
+        }}
+        orderDetails={currentOrderDetails}
+        onConfirm={handlePaymentSuccess}
+        onClearCart={() => setCart([])}
+        authToken={getAuthToken()}
+      />
     </div>
   );
 };

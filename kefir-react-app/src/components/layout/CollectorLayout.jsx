@@ -294,8 +294,13 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
+<<<<<<< HEAD
     backgroundColor: 'transparent',  // ← ИЗМЕНЕНО: убрали белый фон
     // cursor удален - теперь используется глобальный из global.css
+=======
+    backgroundColor: '#f8f9fa',
+    cursor: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M8 28l16-16-4-4L4 24z" fill="black"/><path d="M24 4l4 4-16 16-4-4z" fill="%23000000"/></svg>\') 4 28, auto',
+>>>>>>> 7a3aa214dca64c69999070de7cdb7b131cb5bada
     fontFamily: '\'Comic Sans MS\', \'Comic Neue\', cursive, sans-serif',
     overflow: 'hidden'
   },
