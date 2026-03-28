@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '../../config/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './PaymentModal.css';
@@ -36,6 +35,8 @@ const PaymentModal = ({ show, onClose, orderDetails, onConfirm, onClearCart, aut
   const [cardBalance, setCardBalance] = useState(null);
   const [selectedCardNumber, setSelectedCardNumber] = useState('');
   const [selectedCardId, setSelectedCardId] = useState(null);
+
+  const API_BASE_URL = 'http://localhost:8080/api';
 
   // Функция для получения userId из localStorage
   const getUserIdFromStorage = useCallback(() => {
@@ -174,7 +175,7 @@ const PaymentModal = ({ show, onClose, orderDetails, onConfirm, onClearCart, aut
     };
 
     checkAccount();
-  }, [show, getUserIdFromStorage, getAuthHeaders]);
+  }, [show, getUserIdFromStorage, getAuthHeaders, API_BASE_URL]);
 
   // Создание счета
   const handleCreateAccount = async () => {

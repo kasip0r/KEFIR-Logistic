@@ -1,14 +1,13 @@
 #name: kefir-project
-version: '3.8'
 
 services:
   postgres:
     image: postgres:15-alpine
     container_name: kefir-postgres
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Ghbdtnbr123!
-      - POSTGRES_DB=kefir_db
+      - POSTGRES_USER=${POSTGRES_USER}  
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}   
+      - POSTGRES_DB=${POSTGRES_DB}              
       - POSTGRES_MULTIPLE_DATABASES=auth_db,user_db,sklad_db,delivery_db
       - POSTGRES_MAX_CONNECTIONS=500 
     ports:
@@ -20,29 +19,31 @@ services:
       - my-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d kefir_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  # Бэкенд сервисы
   api-gateway:
     build: ./Backend/ApiGateWay
     ports:
       - "8080:8080"
+    env_file:
+      - .env.docker
     environment:
-      - AUTH_SERVICE_URL=http://auth-service:8097
-      - USER_SERVICE_URL=http://user-service:8081
-      - PRODUCT_SERVICE_URL=http://product-service:8082
-      - DELIVERY_SERVICE_URL=http://delivery-service:8083
-      - COLLECTOR_SERVICE_URL=http://collector-service:8084
-      - CART_SERVICE_URL=http://cart-service:8085
-      - OFFICE_SERVICE_URL=http://office-service:8086
-      - TRANSACTIONSAGA_SERVICE_URL=http://transactionsaga-service:8090
-      - PAYMENT_SERVICE_URL=http://payment-service:8099
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+      - PRODUCT_SERVICE_URL=${PRODUCT_SERVICE_URL}
+      - DELIVERY_SERVICE_URL=${DELIVERY_SERVICE_URL}
+      - COLLECTOR_SERVICE_URL=${COLLECTOR_SERVICE_URL}
+      - CART_SERVICE_URL=${CART_SERVICE_URL}
+      - OFFICE_SERVICE_URL=${OFFICE_SERVICE_URL}
+      - TRANSACTIONSAGA_SERVICE_URL=${TRANSACTIONSAGA_SERVICE_URL}
+      - PAYMENT_SERVICE_URL=${PAYMENT_SERVICE_URL}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
     networks:
       - my-network
     restart: unless-stopped
@@ -54,13 +55,8 @@ services:
     build: ./Backend/Auth
     ports:
       - "8097:8097"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -72,13 +68,8 @@ services:
     build: ./Backend/User
     ports:
       - "8081:8081"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -90,13 +81,8 @@ services:
     build: ./Backend/Product
     ports:
       - "8082:8082"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -108,13 +94,8 @@ services:
     build: ./Backend/Delivery
     ports:
       - "8083:8083"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -126,13 +107,8 @@ services:
     build: ./Backend/Collector
     ports:
       - "8084:8084"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -144,13 +120,8 @@ services:
     build: ./Backend/Carts
     ports:
       - "8085:8085"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -162,13 +133,8 @@ services:
     build: ./Backend/Office
     ports:
       - "8086:8086"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -180,13 +146,8 @@ services:
     build: ./Backend/Payment
     ports:
       - "8099:8099"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker 
     networks:
       - my-network
     restart: unless-stopped
@@ -198,13 +159,8 @@ services:
     build: ./Backend/TransactionSaga
     ports:
       - "8090:8090"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kefir_db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=Ghbdtnbr123!
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5
-      - SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=2 
+    env_file:
+      - .env.docker
     networks:
       - my-network
     restart: unless-stopped
@@ -216,11 +172,8 @@ services:
     build: ./kefir-react-app
     ports:
       - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://localhost:8080
-      - NODE_ENV=development
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
+    env_file:
+      - .env.docker
     networks:
       - my-network
     volumes:
@@ -229,6 +182,21 @@ services:
     restart: unless-stopped
     depends_on:
       - api-gateway
+              
+  nginx:
+    image: nginx:alpine
+    container_name: kefir-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./kefir-react-app/build:/usr/share/nginx/html:ro
+    depends_on:
+      - api-gateway
+    networks:
+      - my-network
+    restart: unless-stopped
 
 networks:
   my-network:

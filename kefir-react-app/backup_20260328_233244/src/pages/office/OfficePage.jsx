@@ -1,4 +1,3 @@
-import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
 // src/pages/office/OfficePage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -12,6 +11,7 @@ const OfficePage = ({ onLogout }) => {
     const [loading, setLoading] = useState(true);
     const [taoshibkaLoading, setTaoshibkaLoading] = useState(false);
     const [emailMessage, setEmailMessage] = useState('');
+    const [actionMessage, setActionMessage] = useState('');
     const [showTaoshibkaModal, setShowTaoshibkaModal] = useState(false);
     const [findCollectorsLoading, setFindCollectorsLoading] = useState(false);
 
@@ -20,7 +20,7 @@ const OfficePage = ({ onLogout }) => {
         const fetchProblems = async () => {
             try {
                 // Ищем заказы со статусом "problem" в таблице carts
-                const response = await axios.get(`${API_BASE_URL}/office/problems/active`);
+                const response = await axios.get('http://localhost:8080/api/office/problems/active');
                 
                 if (response.data.success) {
                     const newProblems = response.data.problems || [];
@@ -58,7 +58,7 @@ const OfficePage = ({ onLogout }) => {
         const fetchTaoshibkaOrders = async () => {
             try {
                 setTaoshibkaLoading(true);
-                const response = await axios.get(`${API_BASE_URL}/office/taoshibka-orders`);
+                const response = await axios.get('http://localhost:8080/api/office/taoshibka-orders');
                 
                 if (response.data.success) {
                     const newOrders = response.data.orders || [];
@@ -97,7 +97,7 @@ const OfficePage = ({ onLogout }) => {
             const cartId = problem.cart_id || problem.order_id;
             if (!cartId) return;
             
-            const response = await axios.get(API_ENDPOINTS.OFFICE_PROBLEM_FULL_INFO(cartId));
+            const response = await axios.get(`http://localhost:8080/api/office/problems/full-info/${cartId}`);
             
             if (response.data.success) {
                 const detailedProblem = {
@@ -191,7 +191,7 @@ ${itemsList}
     const handleSelectTaoshibkaOrder = async (order) => {
         setSelectedTaoshibkaOrder(order);
         try {
-            const response = await axios.get(API_ENDPOINTS.OFFICE_TAOSHIBA_ITEMS(order.cart_id));
+            const response = await axios.get(`http://localhost:8080/api/office/taoshibka-orders/${order.cart_id}/items`);
             
             if (response.data.success) {
                 setTaoshibkaItems(response.data.unknownItems || []);
@@ -210,7 +210,7 @@ ${itemsList}
         if (!selectedProblem) return;
         
         try {
-            const response = await axios.post(`${API_BASE_URL}/office/notify-client`, {
+            const response = await axios.post('http://localhost:8080/api/office/notify-client', {
                 orderId: selectedProblem.order_id,
                 message: emailMessage,
                 clientEmail: selectedProblem.client_email,
@@ -240,7 +240,7 @@ ${itemsList}
         if (!selectedProblem) return;
         
         try {
-            const response = await axios.post(`${API_BASE_URL}/office/make-decision`, {
+            const response = await axios.post('http://localhost:8080/api/office/make-decision', {
                 orderId: selectedProblem.order_id,
                 decision: decision,
                 comments: `Решение принято офисом: ${decision}`
@@ -289,7 +289,7 @@ ${itemsList}
             const orderId = selectedTaoshibkaOrder.cart_id;
             
             const response = await axios.post(
-                API_ENDPOINTS.OFFICE_FIND_COLLECTORS(orderId)
+                `http://localhost:8080/api/office/taoshibka-orders/${orderId}/find-collectors`
             );
             
             if (response.data.success) {
@@ -420,7 +420,7 @@ ${itemsList}
     // Тестирование эндпоинтов
     const testEndpoints = async () => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/office/taoshibka-test`);
+            const response = await axios.get('http://localhost:8080/api/office/taoshibka-test');
             console.log('Taoshibka test response:', response.data);
             
             // Показать результат теста в модальном окне

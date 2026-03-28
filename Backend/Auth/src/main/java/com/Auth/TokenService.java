@@ -9,13 +9,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class TokenService {
 
     private static final Logger log = LoggerFactory.getLogger(TokenService.class);
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final SessionService sessionService = new SessionService();
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -82,45 +83,26 @@ public class TokenService {
     /**
      * Извлекает userId из UUID токена через Auth Service
      */
+    // Вместо вызова самого себя, используем внутреннюю логику
     private Integer extractUserIdFromUuidToken(String uuidToken) {
         try {
-            log.info("=== ИЗВЛЕЧЕНИЕ USER ID ИЗ UUID ТОКЕНА ===");
-            log.info("Токен: {}", uuidToken);
-
-            String url = "http://auth-service:8097/api/auth/validate?clientToken=" + uuidToken;
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<String> entity = new HttpEntity<>("{}", headers);
-
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, entity, Map.class);
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                Map<String, Object> body = response.getBody();
-
-                if (Boolean.TRUE.equals(body.get("valid"))) {
-
-                    if (body.containsKey("userId")) {
-                        return convertToInteger(body.get("userId"));
-                    }
-
-                    if (body.containsKey("user") && body.get("user") instanceof Map) {
-                        Map<String, Object> user = (Map<String, Object>) body.get("user");
-                        if (user.containsKey("id")) {
-                            return convertToInteger(user.get("id"));
-                        }
-                    }
-                }
+            // Извлекаем sessionUUID из токена (auth-xxxxx)
+            if (!uuidToken.startsWith("auth-")) {
+                throw new RuntimeException("Invalid token format");
             }
+            String sessionUUID = uuidToken.substring(5);
 
-            throw new RuntimeException("Не удалось извлечь userId из токена");
-
+            // Прямой запрос в БД, а не HTTP вызов
+            Optional<UserSession> session = sessionService.validateSession(uuidToken);
+            if (session.isPresent()) {
+                return session.get().getUserId();
+            }
+            throw new RuntimeException("Session not found");
         } catch (Exception e) {
-            log.error("❌ Ошибка при извлечении userId: {}", e.getMessage());
-            throw new RuntimeException("Ошибка при обращении к Auth Service: " + e.getMessage());
+            log.error("Failed to extract userId: {}", e.getMessage());
+            throw new RuntimeException("Invalid session token");
         }
     }
-
     /**
      * Конвертирует Object в Integer
      */

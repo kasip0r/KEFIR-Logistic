@@ -1,4 +1,3 @@
-import { API_BASE_URL } from './config/api';
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 
@@ -10,7 +9,7 @@ const ApiSwitcher = () => {
   const checkApiStatus = async () => {
     try {
       // Пробуем сделать простой запрос
-      const response = await fetch(process.env.REACT_APP_API_GATEWAY || `${API_BASE_URL}');
+      const response = await fetch(process.env.REACT_APP_API_GATEWAY || 'http://localhost:8080');
       if (response.ok) {
         setApiStatus('✅ API доступен');
       } else {

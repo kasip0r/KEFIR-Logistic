@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '../config/api';
 // src/components/office/PollingManager.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
@@ -24,7 +23,7 @@ const PollingManager = ({ onProblemsUpdate, onStatsUpdate, children }) => {
                 }
                 
                 const response = await axios.get(
-                    `${API_BASE_URL}/office/problems/active',
+                    'http://localhost:8080/api/office/problems/active',
                     { params, timeout: 10000 }
                 );
                 
@@ -36,7 +35,7 @@ const PollingManager = ({ onProblemsUpdate, onStatsUpdate, children }) => {
                     // Получаем статистику
                     if (onStatsUpdate) {
                         const statsResponse = await axios.get(
-                            `${API_BASE_URL}/office/problems/stats'
+                            'http://localhost:8080/api/office/problems/stats'
                         );
                         onStatsUpdate(statsResponse.data);
                     }

@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '../../config/api';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import PaymentModal from './PaymentModal';
@@ -22,6 +21,8 @@ const ClientPortal = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
   const [userWarehouse, setUserWarehouse] = useState('usersklad'); // ← добавить эту строку
+
+  const API_BASE_URL = 'http://localhost:8080/api';
 
   const getAuthToken = useCallback(() => {
     return localStorage.getItem('token');
@@ -100,7 +101,7 @@ const ClientPortal = () => {
       setLoading(true);
       const headers = getAuthHeaders();
       
-      const response = await axios.get(`${API_BASE_URL}/client/products`, headers);
+      const response = await axios.get('http://localhost:8080/api/client/products', headers);
       const responseData = response.data;
 
       if (responseData.warehouse) {
@@ -126,7 +127,7 @@ const ClientPortal = () => {
       
       productsData.sort((a, b) => a.name.localeCompare(b.name));
       
-    setProducts(productsData);
+      setProducts(productsData);
       
       const uniqueCategories = ['Все', ...new Set(productsData.map(p => p.category))];
       setCategories(uniqueCategories);

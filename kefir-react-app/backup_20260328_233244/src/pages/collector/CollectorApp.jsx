@@ -1,4 +1,3 @@
-import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
 // CollectorApp.jsx - полная версия с ИСПРАВЛЕНИЯМИ (добавлены cartItemId)
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
@@ -99,7 +98,7 @@ const CollectorApp = () => {
       console.log('⭐ starаyoshibka: загружаем фиксированные статусы для заказа #', cartId);
       
       const response = await axios.get(
-        API_ENDPOINTS.COLLECTOR_NALICHIE_STATUS(cartId),
+        `http://localhost:8080/api/collector/cart/${cartId}/nalichie-status`,
         getAuthHeaders()
       );
       
@@ -129,7 +128,7 @@ const CollectorApp = () => {
       console.log('Запрашиваем заказы с headers:', headers);
 
       const response = await axios.get(
-        `${API_BASE_URL}/collector/processing-orders`, 
+        'http://localhost:8080/api/collector/processing-orders', 
         headers
       );
       
@@ -370,7 +369,7 @@ const CollectorApp = () => {
         console.log('🔍 Проверка товара для сборщика:', collectorId);
         
         const response = await axios.post(
-          `${API_BASE_URL}/collector/check-item-in-warehouse`, 
+          'http://localhost:8080/api/collector/check-item-in-warehouse', 
           {
             productId: item.product_id,
             collectorId: collectorId
@@ -468,7 +467,7 @@ const CollectorApp = () => {
       console.log('- Доступно товаров:', availableItems.length);
       
       const response = await axios.post(
-        `${API_BASE_URL}/collector/report-missing-items`,
+        'http://localhost:8080/api/collector/report-missing-items',
         {
           cartId: selectedOrder.cart_id,
           // ========== ИСПРАВЛЕНИЕ: добавляем cartItemId ==========
@@ -562,7 +561,7 @@ const CollectorApp = () => {
       // Собираем все товары со статусом 'есть'
       
       const response = await axios.post(
-        `${API_BASE_URL}/collector/complete-with-selected-items`,
+        'http://localhost:8080/api/collector/complete-with-selected-items',
         {
           cartId: selectedOrder.cart_id,
           // ========== ИСПРАВЛЕНИЕ: добавляем cartItemId ==========

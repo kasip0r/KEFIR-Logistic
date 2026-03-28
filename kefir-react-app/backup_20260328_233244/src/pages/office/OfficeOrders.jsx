@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '../../config/api';
 // src/pages/office/OfficeOrders.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -15,7 +14,7 @@ const OfficeOrders = () => {
   const fetchOrders = async () => {
     try {
       // Здесь должен быть реальный эндпоинт для заказов
-      const response = await axios.get(`${API_BASE_URL}/office/orders`);
+      const response = await axios.get('http://localhost:8080/api/office/orders');
       setOrders(response.data);
     } catch (error) {
       console.error('Ошибка при загрузке заказов:', error);

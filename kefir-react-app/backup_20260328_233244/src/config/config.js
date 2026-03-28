@@ -1,7 +1,6 @@
-import { API_BASE_URL } from './config/api';
 // src/config/config.js
 export const API_CONFIG = {
-  BASE_URL: process.env.REACT_APP_API_URL || `${API_BASE_URL}`,
+  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:8080',
   
   // Ваши реальные endpoints
   ENDPOINTS: {

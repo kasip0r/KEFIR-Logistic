@@ -1,6 +1,8 @@
-import { API_BASE_URL } from '../config/api';
 // src/services/api.js
 import axios from 'axios';
+
+// Базовый URL (без /api в конце!)
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 console.log('API base URL:', API_BASE_URL);
 
@@ -52,7 +54,7 @@ api.interceptors.response.use(
 export const authAPI = {
   login: async (credentials) => {
     try {
-      const response = await api.post('auth/login', credentials);
+      const response = await api.post('api/auth/login', credentials);
       
       console.log('Login response:', response.data);
       
@@ -159,33 +161,33 @@ export const healthAPI = {
 // ==================== CLIENTS API ====================
 export const clientsAPI = {
   getAll: async () => {
-    const response = await api.get('/clients');
+    const response = await api.get('api/clients');
     return response.data;
   },
   
   getById: async (id) => {
-    const response = await api.get(`/clients/${id}`);
+    const response = await api.get(`api/clients/${id}`);
     return response.data;
   },
   
   getProfile: async (id) => {
-    const response = await api.get(`/clients/${id}/profile`);
+    const response = await api.get(`api/clients/${id}/profile`);
     return response.data;
   },
 
   // ✅ ДОБАВИТЬ ЭТОТ МЕТОД
   create: async (data) => {
-    const response = await api.post('/admin/clients', data);
+    const response = await api.post('api/admin/clients', data);
     return response.data;
   },
 
   delete: async (id) => {
-    const response = await api.delete(`/admin/clients/${id}`);
+    const response = await api.delete(`api/admin/clients/${id}`);
     return response.data;
   },
 
   update: async (id, data) => {
-    const response = await api.put(`/admin/clients/${id}`, data);
+    const response = await api.put(`api/admin/clients/${id}`, data);
     return response.data;
   }
 };
@@ -193,26 +195,26 @@ export const clientsAPI = {
 // ==================== PRODUCTS API ====================
 export const productsAPI = {
   getAll: async () => {
-    const response = await api.get('/products');
+    const response = await api.get('api/products');
     return response.data;  // ← это массив
   },
   
   getByWarehouse: async (warehouse) => {
-    const response = await api.get(`/warehouse/${warehouse}/products`);
+    const response = await api.get(`api/warehouse/${warehouse}/products`);
     // ✅ Возвращаем ТОЛЬКО массив товаров
     return response.data.products || [];
   },
   
   // GET товар по ID
   getById: async (id) => {
-    const response = await api.get(`/products/${id}`);
+    const response = await api.get(`api/products/${id}`);
     return response.data;
   },
   
   // POST создать новый товар
   create: async (productData) => {
   const token = localStorage.getItem('token');
-  const response = await api.post('/products', productData, {
+  const response = await api.post('api/products', productData, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
   return response.data;
@@ -224,8 +226,8 @@ update: async (id, productData, warehouse) => {
   
   // Добавляем warehouse как query-параметр
   const url = warehouse 
-    ? `/products/${id}?warehouse=${warehouse}`
-    : `/products/${id}`;
+    ? `api/products/${id}?warehouse=${warehouse}`
+    : `api/products/${id}`;
   
   const response = await api.put(url, productData);
   console.log('📥 Update response:', response.data);
@@ -234,10 +236,10 @@ update: async (id, productData, warehouse) => {
   
   delete: async (id, warehouse) => {
       console.log('📤 Deleting product ID:', id, 'warehouse:', warehouse);
-  console.log('📤 URL:', `/products/${id}?warehouse=${warehouse}`); 
+  console.log('📤 URL:', `api/products/${id}?warehouse=${warehouse}`); 
    const url = warehouse 
-    ? `/products/${id}?warehouse=${warehouse}`
-    : `/products/${id}`;
+    ? `api/products/${id}?warehouse=${warehouse}`
+    : `api/products/${id}`;
   
   const response = await api.delete(url);
   console.log('📥 Delete response:', response.data);
@@ -246,37 +248,37 @@ update: async (id, productData, warehouse) => {
   
   // GET поиск товаров
   search: async (query) => {
-    const response = await api.get(`/products/search?query=${encodeURIComponent(query)}`);
+    const response = await api.get(`api/products/search?query=${encodeURIComponent(query)}`);
     return response.data;
   },
   
   // GET товары по категории
   getByCategory: async (category) => {
-    const response = await api.get(`/products/category/${encodeURIComponent(category)}`);
+    const response = await api.get(`api/products/category/${encodeURIComponent(category)}`);
     return response.data;
   },
   
   // GET статистика товаров
   getStats: async () => {
-    const response = await api.get('/products/stats');
+    const response = await api.get('api/products/stats');
     return response.data;
   },
   
   // GET товары с низким запасом
   getLowStock: async (threshold = 10) => {
-    const response = await api.get(`/products/low-stock?threshold=${threshold}`);
+    const response = await api.get(`api/products/low-stock?threshold=${threshold}`);
     return response.data;
   },
   
   // GET товары для клиента (с учетом города)
   getForClient: async () => {
-    const response = await api.get('/client/products');
+    const response = await api.get('api/client/products');
     return response.data;
   },
   
   // GET конкретный товар для клиента
   getForClientById: async (id) => {
-    const response = await api.get(`/client/products/${id}`);
+    const response = await api.get(`api/client/products/${id}`);
     return response.data;
   }
 };

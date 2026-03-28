@@ -221,6 +221,11 @@ public class UnifiedController {
         return proxyRequest(() -> clientServiceClient.validateFields(request), httpServlet);
     }
 
+    @GetMapping("/clients/by-username/{username}")
+    public ResponseEntity<?> getUserByUsername(@PathVariable String username, HttpServletRequest httpServlet) {
+        return proxyRequest(() -> clientServiceClient.getUserByUsername(username), httpServlet);
+    }
+
     // =================================== ADMIN PANEL =======================================
 
     @PostMapping("/admin/clients")

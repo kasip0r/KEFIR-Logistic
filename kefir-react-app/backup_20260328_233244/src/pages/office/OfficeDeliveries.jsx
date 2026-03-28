@@ -1,4 +1,3 @@
-import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
 // src/pages/office/OfficeDeliveries.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -8,6 +7,7 @@ const OfficeDeliveries = () => {
   const [deliveries, setDeliveries] = useState([]);
   const [couriers, setCouriers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [assigning, setAssigning] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const OfficeDeliveries = () => {
 
   const fetchDeliveries = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/deliveries`);
+      const response = await axios.get('http://localhost:8080/api/deliveries');
       setDeliveries(response.data || []);
     } catch (error) {
       console.error('Ошибка при загрузке доставок:', error);
@@ -35,7 +35,7 @@ const OfficeDeliveries = () => {
 
   const fetchCouriers = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/couriers`);
+      const response = await axios.get('http://localhost:8080/api/couriers');
       setCouriers(response.data || []);
     } catch (error) {
       console.error('Ошибка при загрузке курьеров:', error);
@@ -50,7 +50,7 @@ const OfficeDeliveries = () => {
   const handleAssignCourier = async (deliveryId, courierId) => {
     try {
       setAssigning(true);
-      await axios.post(API_ENDPOINTS.DELIVERY_ASSIGN(deliveryId), {
+      await axios.post(`http://localhost:8080/api/deliveries/${deliveryId}/assign`, {
         courierId
       });
       alert('Курьер успешно назначен!');
@@ -65,7 +65,7 @@ const OfficeDeliveries = () => {
 
   const handleUpdateStatus = async (deliveryId, status) => {
     try {
-      await axios.post(API_ENDPOINTS.DELIVERY_STATUS(deliveryId), {
+      await axios.post(`http://localhost:8080/api/deliveries/${deliveryId}/status`, {
         status
       });
       alert('Статус обновлен!');

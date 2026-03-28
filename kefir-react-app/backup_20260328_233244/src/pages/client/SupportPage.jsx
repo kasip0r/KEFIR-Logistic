@@ -1,4 +1,3 @@
-import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
 // src/pages/client/SupportPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
@@ -44,7 +43,7 @@ const SupportPage = () => {
     try {
       // 1. Получаем заказы клиента
       const ordersResponse = await axios.get(
-        API_ENDPOINTS.CART_CLIENT(clientId)
+        `http://localhost:8080/api/cart/client/${clientId}`
       );
       
       const orders = ordersResponse.data.carts || [];
@@ -89,7 +88,7 @@ const SupportPage = () => {
       
       // 5. Получаем недопоставленные товары
       const itemsResponse = await axios.get(
-        API_ENDPOINTS.SUPPORT_UNAVAILABLE_ITEMS(clientId)
+        `http://localhost:8080/api/support/unavailable-items/${clientId}`
       );
       
       const allItems = itemsResponse.data.items || [];
@@ -137,14 +136,14 @@ const SupportPage = () => {
     try {
       // Получаем все заказы клиента
       const ordersResponse = await axios.get(
-        API_ENDPOINTS.CART_CLIENT(clientId)
+        `http://localhost:8080/api/cart/client/${clientId}`
       );
       
       const allOrders = ordersResponse.data.carts || [];
       
       // Получаем товары с unknown статусом
       const itemsResponse = await axios.get(
-        `API_ENDPOINTS.SUPPORT_UNAVAILABLE_ITEMS(clientId)`
+        `http://localhost:8080/api/support/unavailable-items/${clientId}`
       );
       
       const unknownItems = itemsResponse.data.items || [];
@@ -192,8 +191,9 @@ const SupportPage = () => {
     setError('');
     
     try {
-        const response = await axios.get(
-        `API_ENDPOINTS.SUPPORT_UNAVAILABLE_ITEMS(clientId)`
+      const clientId = getClientId();
+      const response = await axios.get(
+        `http://localhost:8080/api/support/unavailable-items/${clientId}`
       );
       
       if (response.data.success) {
@@ -351,17 +351,18 @@ const SupportPage = () => {
     }
     
     try {
-         
+      let response;
+      
       if (action === 'refund') {
         // 1. Вернуть деньги - расчет суммы
-        const refundResponse = await axios.post(`${API_BASE_URL}/support/refund-items`, {
+        const refundResponse = await axios.post('http://localhost:8080/api/support/refund-items', {
           items: selectedItemsData,
           totalAmount: totalRefundAmount
         });
         
         if (refundResponse.data.success) {
           // 2. Меняем статус заказа на 'tc' (короткая версия) - БЕЗ last_action
-          const statusResponse = await axios.post(`${API_BASE_URL}/support/update-order-status`, {
+          const statusResponse = await axios.post('http://localhost:8080/api/support/update-order-status', {
             cartId: selectedOrder.id,
             newStatus: 'tc'
             // Убрано: action: 'refund'
@@ -390,14 +391,14 @@ const SupportPage = () => {
         }
       } else if (action === 'recollect') {
         // 1. Пересобрать заказ - используем новый эндпоинт с коротким статусом
-        const recollectResponse = await axios.post(`${API_BASE_URL}/support/recollect-order`, {
+        const recollectResponse = await axios.post('http://localhost:8080/api/support/recollect-order', {
           cartIds: [selectedOrder.id],
           items: selectedItemsData
         });
         
         if (recollectResponse.data.success) {
           // 2. Дополнительно обновляем статус через update-order-status для consistency
-          await axios.post(`${API_BASE_URL}/support/update-order-status`, {
+          await axios.post('http://localhost:8080/api/support/update-order-status', {
             cartId: selectedOrder.id,
             newStatus: 'taoshibka'
             // Убрано: action: 'recollect'

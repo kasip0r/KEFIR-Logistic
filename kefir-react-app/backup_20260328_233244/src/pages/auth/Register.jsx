@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '../../config/api';
 import React, { useState, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
@@ -11,6 +10,8 @@ const Spinner = () => (
     ↻
   </span>
 );
+
+const API_URL = 'http://localhost:8080';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const Register = () => {
     
     setChecking(prev => ({ ...prev, email: true }));
     try {
-      const response = await fetch(`${API_BASE_URL}/clients/check-email`, {
+      const response = await fetch(`${API_URL}/api/clients/check-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -101,7 +102,7 @@ const Register = () => {
     
     setChecking(prev => ({ ...prev, username: true }));
     try {
-      const response = await fetch(`${API_BASE_URL}/clients/check-username`, {
+      const response = await fetch(`${API_URL}/api/clients/check-username`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username })
@@ -240,7 +241,7 @@ const Register = () => {
     
     try {
       // Прямой запрос к эндпоинту регистрации
-      const response = await fetch(`${API_BASE_URL}/clients/register`, {
+      const response = await fetch(`${API_URL}/api/clients/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

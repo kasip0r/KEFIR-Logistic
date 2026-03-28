@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '../../config/api';
 // src/pages/office/OfficeProblemOrders.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -17,7 +16,7 @@ const OfficeProblemOrders = () => {
     const fetchProblemOrders = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`${API_BASE_URL}/office/orders/problems`);
+            const response = await axios.get('http://localhost:8080/api/office/orders/problems');
             
             if (response.data.success) {
                 setOrders(response.data.orders || []);
@@ -57,7 +56,7 @@ const OfficeProblemOrders = () => {
     const handleSelectOrder = async (order) => {
         setSelectedOrder(order);
         try {
-            const response = await axios.get(API_ENDPOINTS.OFFICE_ORDER_DETAILS(order.order_id));
+            const response = await axios.get(`http://localhost:8080/api/office/orders/${order.order_id}/details`);
             if (response.data.success) {
                 setOrderDetails(response.data);
             }

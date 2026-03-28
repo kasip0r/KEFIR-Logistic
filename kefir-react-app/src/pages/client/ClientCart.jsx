@@ -1,3 +1,4 @@
+import {API_ENDPOINTS } from '../../config/api';
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import PaymentModal from './PaymentModal';
@@ -51,7 +52,7 @@ const ClientCart = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:8080/api/cart/client/${clientId}/full`
+        API_ENDPOINTS.CART_CLIENT_FULL(clientId)
       );
       
       console.log('Ответ от API:', response.data);
@@ -123,7 +124,7 @@ const handleCancelOrder = async () => {
     
     // 1. Находим заказ по cartId
     const orderResponse = await axios.get(
-      `http://localhost:8080/api/orders/by-cart/${cartToDelete.id}`,
+      API_ENDPOINTS.ORDER_BY_CART(cartToDelete.id),
       {
         headers: { 'Authorization': `Bearer ${getAuthToken()}` }
       }
@@ -140,7 +141,7 @@ const handleCancelOrder = async () => {
     
     // 2. Меняем статус заказа на "cancelled"
     const statusResponse = await axios.put(
-      `http://localhost:8080/api/cart/orders/${orderId}/status`,
+      API_ENDPOINTS.ORDER_STATUS(orderId),
       { status: 'cancelled' },
       {
         headers: { 'Authorization': `Bearer ${getAuthToken()}` }
@@ -154,7 +155,7 @@ const handleCancelOrder = async () => {
       for (const item of cartToDelete.items) {
         try {
           await axios.post(
-            `http://localhost:8080/api/products/${item.productId}/release`,
+            API_ENDPOINTS.PRODUCT_RELEASE(item.productId),
             null,
             {
               params: { quantity: item.quantity },
@@ -232,7 +233,7 @@ const handleOpenPayment = async (cart) => {
   try {
     // Пытаемся получить существующий заказ
     const orderResponse = await axios.get(
-      `http://localhost:8080/api/orders/by-cart/${cartId}`,
+      API_ENDPOINTS.ORDER_BY_CART(cartId),
       {
         headers: { 'Authorization': `Bearer ${getAuthToken()}` }
       }
@@ -264,7 +265,7 @@ const handleOpenPayment = async (cart) => {
       };
       
       const createResponse = await axios.post(
-        `http://localhost:8080/api/orders`,
+        API_ENDPOINTS.CREATE_ORDER,
         createOrderData,
         { headers: { 'Authorization': `Bearer ${getAuthToken()}` } }
       );

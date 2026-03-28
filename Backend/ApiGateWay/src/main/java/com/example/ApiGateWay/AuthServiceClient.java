@@ -5,7 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-@FeignClient(name = "auth-service", url = "http://auth-service:8097", configuration = FeignConfig.class)  // для Docker
+@FeignClient(name = "auth-service", url = "${AUTH_SERVICE_URL:http://localhost:8097}")
+//@FeignClient(name = "auth-service", url = "http://auth-service:8097", configuration = FeignConfig.class)  // для Docker
 //@FeignClient(name = "auth-service", url = "http://localhost:8097", configuration = FeignConfig.class) // для локального запуска
 public interface AuthServiceClient {
 
